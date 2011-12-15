@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="0" failures="0" hostname="marcmacbook.local" name="Base62CodecTests" tests="2" time="0.171" timestamp="2009-08-26T15:50:46">
+  <properties />
+  <testcase classname="Base62CodecTests" name="testEncodingBytesIsSymmetrical" time="0.165" />
+  <testcase classname="Base62CodecTests" name="testEncodingStringsIsSymmetrical" time="0.0030" />
+  <system-out><![CDATA[--Output from testEncodingBytesIsSymmetrical--
+--Output from testEncodingStringsIsSymmetrical--
+]]></system-out>
+  <system-err><![CDATA[--Output from testEncodingBytesIsSymmetrical--
+--Output from testEncodingStringsIsSymmetrical--
+]]></system-err>
+</testsuite>

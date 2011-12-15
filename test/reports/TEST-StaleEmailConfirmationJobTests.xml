@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="0" failures="0" hostname="marcmacbook.local" name="StaleEmailConfirmationJobTests" tests="1" time="0.0030" timestamp="2009-08-26T15:51:08">
+  <properties />
+  <testcase classname="StaleEmailConfirmationJobTests" name="testSomething" time="0.0010" />
+  <system-out><![CDATA[--Output from testSomething--
+]]></system-out>
+  <system-err><![CDATA[--Output from testSomething--
+]]></system-err>
+</testsuite>

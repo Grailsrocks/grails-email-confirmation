@@ -1,0 +1,4 @@
+--Output from testSendConfirmation--
+conf token: jF2M1m3qeNJFBTAafbVVE9F3ru8
+--Output from testCheckConfirmation--
+

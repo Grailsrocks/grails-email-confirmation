@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="0" failures="0" hostname="marcmacbook.local" name="EmailConfirmationServiceTests" tests="2" time="1.23" timestamp="2009-08-26T15:51:07">
+  <properties />
+  <testcase classname="EmailConfirmationServiceTests" name="testSendConfirmation" time="1.072" />
+  <testcase classname="EmailConfirmationServiceTests" name="testCheckConfirmation" time="0.135" />
+  <system-out><![CDATA[--Output from testSendConfirmation--
+conf token: jF2M1m3qeNJFBTAafbVVE9F3ru8
+--Output from testCheckConfirmation--
+]]></system-out>
+  <system-err><![CDATA[--Output from testSendConfirmation--
+--Output from testCheckConfirmation--
+]]></system-err>
+</testsuite>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="0" failures="0" hostname="marcmacbook.local" name="EmailConfirmationControllerTests" tests="1" time="0.039" timestamp="2009-08-26T15:51:07">
+  <properties />
+  <testcase classname="EmailConfirmationControllerTests" name="testIncomingConfirmation" time="0.0" />
+  <system-out><![CDATA[--Output from testIncomingConfirmation--
+]]></system-out>
+  <system-err><![CDATA[--Output from testIncomingConfirmation--
+]]></system-err>
+</testsuite>

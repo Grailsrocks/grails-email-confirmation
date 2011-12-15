@@ -1,0 +1,35 @@
+***************
+*** 73,78 ****
+  		
+  		def defaultView = binding.view == null
+  		def viewName = defaultView ? "/emailconfirmation/mail/confirmationRequest" : binding.view
+  
+  		try {
+      		mailService.sendMail {
+--- 73,79 ----
+  		
+  		def defaultView = binding.view == null
+  		def viewName = defaultView ? "/emailconfirmation/mail/confirmationRequest" : binding.view
++         def pluginName = defaultView ? "email-confirmation" : binding.plugin
+  
+  		try {
+      		mailService.sendMail {
+***************
+*** 80,87 ****
+      			from binding.from ?: ConfigurationHolder.config.emailConfirmation.from
+      			subject thesubject
+      			def bodyArgs = [view:viewName, model:binding]
+-     			if (defaultView) {
+-     			    bodyArgs.plugin = "email-confirmation"
+      			}
+      			body( bodyArgs)
+  
+--- 81,88 ----
+      			from binding.from ?: ConfigurationHolder.config.emailConfirmation.from
+      			subject thesubject
+      			def bodyArgs = [view:viewName, model:binding]
++     			if (pluginName) {
++     			    bodyArgs.plugin = pluginName
+      			}
+      			body( bodyArgs)
+  

@@ -1,0 +1,3 @@
+--Output from testEncodingBytesIsSymmetrical--
+--Output from testEncodingStringsIsSymmetrical--
+

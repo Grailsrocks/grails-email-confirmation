@@ -1,0 +1,13 @@
+Testsuite: Base62CodecTests
+Tests run: 2, Failures: 0, Errors: 0, Time elapsed: 0.171 sec
+------------- Standard Output ---------------
+--Output from testEncodingBytesIsSymmetrical--
+--Output from testEncodingStringsIsSymmetrical--
+------------- ---------------- ---------------
+------------- Standard Error -----------------
+--Output from testEncodingBytesIsSymmetrical--
+--Output from testEncodingStringsIsSymmetrical--
+------------- ---------------- ---------------
+
+Testcase: testEncodingBytesIsSymmetrical took 0.165 sec
+Testcase: testEncodingStringsIsSymmetrical took 0.004 sec

@@ -1,0 +1,14 @@
+Testsuite: EmailConfirmationServiceTests
+Tests run: 2, Failures: 0, Errors: 0, Time elapsed: 1.23 sec
+------------- Standard Output ---------------
+--Output from testSendConfirmation--
+conf token: jF2M1m3qeNJFBTAafbVVE9F3ru8
+--Output from testCheckConfirmation--
+------------- ---------------- ---------------
+------------- Standard Error -----------------
+--Output from testSendConfirmation--
+--Output from testCheckConfirmation--
+------------- ---------------- ---------------
+
+Testcase: testSendConfirmation took 1.072 sec
+Testcase: testCheckConfirmation took 0.135 sec

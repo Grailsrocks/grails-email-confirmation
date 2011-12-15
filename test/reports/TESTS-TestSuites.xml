@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites>
+  <testsuite errors="0" failures="0" hostname="marcmacbook.local" id="0" name="Base62CodecTests" package="" tests="2" time="0.171" timestamp="2009-08-26T15:50:46">
+      <properties />
+
+      <testcase classname="Base62CodecTests" name="testEncodingBytesIsSymmetrical" time="0.165" />
+
+      <testcase classname="Base62CodecTests" name="testEncodingStringsIsSymmetrical" time="0.0030" />
+
+      <system-out><![CDATA[--Output from testEncodingBytesIsSymmetrical--
+--Output from testEncodingStringsIsSymmetrical--
+]]></system-out>
+
+      <system-err><![CDATA[--Output from testEncodingBytesIsSymmetrical--
+--Output from testEncodingStringsIsSymmetrical--
+]]></system-err>
+
+  </testsuite>
+  <testsuite errors="0" failures="0" hostname="marcmacbook.local" id="1" name="EmailConfirmationControllerTests" package="" tests="1" time="0.039" timestamp="2009-08-26T15:51:07">
+      <properties />
+
+      <testcase classname="EmailConfirmationControllerTests" name="testIncomingConfirmation" time="0.0" />
+
+      <system-out><![CDATA[--Output from testIncomingConfirmation--
+]]></system-out>
+
+      <system-err><![CDATA[--Output from testIncomingConfirmation--
+]]></system-err>
+
+  </testsuite>
+  <testsuite errors="0" failures="0" hostname="marcmacbook.local" id="2" name="EmailConfirmationServiceTests" package="" tests="2" time="1.23" timestamp="2009-08-26T15:51:07">
+      <properties />
+
+      <testcase classname="EmailConfirmationServiceTests" name="testSendConfirmation" time="1.072" />
+
+      <testcase classname="EmailConfirmationServiceTests" name="testCheckConfirmation" time="0.135" />
+
+      <system-out><![CDATA[--Output from testSendConfirmation--
+conf token: jF2M1m3qeNJFBTAafbVVE9F3ru8
+--Output from testCheckConfirmation--
+]]></system-out>
+
+      <system-err><![CDATA[--Output from testSendConfirmation--
+--Output from testCheckConfirmation--
+]]></system-err>
+
+  </testsuite>
+  <testsuite errors="0" failures="0" hostname="marcmacbook.local" id="3" name="PendingEmailConfirmationTests" package="" tests="1" time="0.0030" timestamp="2009-08-26T15:51:08">
+      <properties />
+
+      <testcase classname="PendingEmailConfirmationTests" name="testSomething" time="0.0010" />
+
+      <system-out><![CDATA[--Output from testSomething--
+]]></system-out>
+
+      <system-err><![CDATA[--Output from testSomething--
+]]></system-err>
+
+  </testsuite>
+  <testsuite errors="0" failures="0" hostname="marcmacbook.local" id="4" name="StaleEmailConfirmationJobTests" package="" tests="1" time="0.0030" timestamp="2009-08-26T15:51:08">
+      <properties />
+
+      <testcase classname="StaleEmailConfirmationJobTests" name="testSomething" time="0.0010" />
+
+      <system-out><![CDATA[--Output from testSomething--
+]]></system-out>
+
+      <system-err><![CDATA[--Output from testSomething--
+]]></system-err>
+
+  </testsuite>
+</testsuites>
