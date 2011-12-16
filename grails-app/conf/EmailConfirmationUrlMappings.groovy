@@ -16,6 +16,7 @@
  
 class EmailConfirmationUrlMappings {
     static mappings = {
+        // @todo parameterize this
         "/confirm/$id?" {
             controller = 'emailConfirmation'
             action = "index"

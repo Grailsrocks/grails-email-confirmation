@@ -17,45 +17,66 @@ import grails.util.Environment
 
  
 class EmailConfirmationGrailsPlugin {
-	def version = "1.0.5"
+	def version = "2.0.BUILD-SNAPSHOT"
 
-    def grailsVersion = "1.2 > *"
-	def dependsOn = [mail:"0.7.1 > *", quartz:"0.2 > *"]
+    def grailsVersion = "1.3 > *"
+	def dependsOn = [
+	    pluginPlatform:'1.0.BUILD-SNAPSHOT > *',
+	    mail:"1.0-SNAPSHOT > *", 
+	    quartz:"0.4.2 > *"
+	]
 
     def loadAfter = ['logging']
 
     // resources that are excluded from plugin packaging
     def pluginExcludes = [
-        "grails-app/views/error.gsp"
+        "grails-app/views/error.gsp",
+        "grails-app/views/index.gsp"
     ]
 
     def author = "Marc Palmer"
     def authorEmail = "marc@grailsrocks.com"
     def title = "Email Confirmation"
     def description = '''\\
-A single call to a service sends a customizable email to the user, including a link they must
-click to confirm their address. Upon confirmation or timeout of these confirmations, the
-application receives callbacks.
+Send emails to users to perform click-through confirmations of any kinds.
 '''
 
         // URL to the plugin's documentation
     def documentation = "http://grails.org/plugin/email-confirmation"
 	
+    // Extra (optional) plugin metadata
+
+    // License: one of 'APACHE', 'GPL2', 'GPL3'
+    def license = "APACHE"
+
+    // Details of company behind the plugin (if there is one)
+    def organization = [ name: "Grails Rocks", url: "http://grailsrocks.com/" ]
+
+    // Any additional developers beyond the author specified above.
+    def developers = [ [ name: "Marc Palmer", email: "marc@grailsrocks.com" ]]
+
+    // Location of the plugin's issue tracker.
+    def issueManagement = [ system: "JIRA", url: "http://jira.grails.org/browse/GPEMAILCONFIRMATION" ]
+
+    // Online location of the plugin's browseable source code.
+    def scm = [ url: "http://github.com/grailsrocks/grails-email-confirmation" ]
+    
 	def doWithSpring = {
-		// TODO Implement runtime spring config (optional)
 	}   
+
 	def doWithApplicationContext = { applicationContext ->
-		// TODO Implement post initialization spring config (optional)		
 	}
+
 	def doWithWebDescriptor = {
-		// TODO Implement additions to web.xml (optional)
 	}	                                      
+
+    def doWithConfigOptions = {
+        'from'(type:String, defaultValue:'admin@localhost')
+    }
+    
 	def onChange = { event ->
-		// TODO Implement code that is executed when this class plugin class is changed  
-		// the event contains: event.application and event.applicationContext objects
 	}                                                                                  
+
 	def onApplicationChange = { event ->
-		// TODO Implement code that is executed when any class in a GrailsApplication changes
-		// the event contain: event.source, event.application and event.applicationContext objects
 	}
 }

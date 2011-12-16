@@ -15,6 +15,8 @@
  */
 package com.grailsrocks.emailconfirmation
  
+import java.util.concurrent.ConcurrentHashMap
+
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.context.ApplicationContextAware
 import org.springframework.context.ApplicationContext
@@ -47,39 +49,72 @@ class EmailConfirmationService implements ApplicationContextAware {
 	// Auto populated by ApplicationContextAware
 	ApplicationContext applicationContext
 	
+	def grailsApplication
+	
+	Map<String, Closure> confirmedHandlers = new ConcurrentHashMap<String, Closure>()
+	Map<String, Closure> invalidHandlers = new ConcurrentHashMap<String, Closure>()
+	Map<String, Closure> timeoutHandlers = new ConcurrentHashMap<String, Closure>()
+	
+	void addConfirmedHandler(String name, Closure handler) {
+	    confirmedHandlers[name] = handler
+	}
+	
+	void addInvalidHandler(String name, Closure handler) {
+	    invalidHandlers[name] = handler
+	}
+	
+	void addTimeoutHandler(String name, Closure handler) {
+	    timeoutHandlers[name] = handler
+	}
+	
 	def makeURL(token) {
 		//@todo this needs to change to do a reverse mapping lookup
 		//@todo also if uri already exists in binding, append token to it
 	    def grailsApplication = ApplicationHolder.application
-		def serverURL = ConfigurationHolder.config.grails.serverURL ?: 'http://localhost:8080/'+grailsApplication.metadata.'app.name'
+		def serverURL = grailsApplication.config.grails.serverURL ?: 'http://localhost:8080/'+grailsApplication.metadata.'app.name'
     	"${serverURL}/confirm/${token.encodeAsURL()}"
 	}
 	
-	def sendConfirmation(String emailAddress, String thesubject,  
-		Map binding = null, String userToken = null) {
-		def conf = new PendingEmailConfirmation(emailAddress:emailAddress, userToken:userToken)
+	/**
+	 * Send a new email confirmation 
+	 *
+	 * to - Required, email address
+	 * id - Required, application-specific token used in callbacks when this confirmation is complete/invalid
+	 * subject - Required, subject for the email
+	 * handler - Required, handler name for event callbacks
+	 * from - Optional, sender from address, defaults to config's emailConfirmation.from
+	 * model - Optional, model to use in the email GSP view
+	 * view - Optional, path to GSP view to use for the email body
+	 * plugin - Optional, the "filesystem" name of the plugin
+	 */
+	def sendConfirmation(Map args) {
+		def conf = new PendingEmailConfirmation(
+		    emailAddress:args.to, 
+		    userToken:args.id, 
+		    handlerName:args.handler)
         conf.makeToken()
+        
         if (!conf.save()) {
 			throw new IllegalArgumentException( "Unable to save pending confirmation: ${conf.errors}")
 		}
 		
-		binding = binding ? new HashMap(binding) : [:]
+		def binding = args.model ? new HashMap(args.model) : [:]
 	
 		binding['uri'] = makeURL(conf.confirmationToken)
 
 		if (log.infoEnabled) {
-			log.info( "Sending email confirmation mail to $emailAddress - confirmation link is: ${binding.uri}")
+			log.info( "Sending email confirmation mail to $args.to - confirmation link is: ${binding.uri}")
 		}
 		
-		def defaultView = binding.view == null
-		def viewName = defaultView ? "/emailconfirmation/mail/confirmationRequest" : binding.view
-        def pluginName = defaultView ? "email-confirmation" : binding.plugin
+		def defaultView = args.view == null
+		def viewName = defaultView ? "/emailconfirmation/mail/confirmationRequest" : args.view
+        def pluginName = defaultView ? "email-confirmation" : args.plugin
 
 		try {
     		mailService.sendMail {
-    			to emailAddress 
-    			from binding.from ?: ConfigurationHolder.config.emailConfirmation.from
-    			subject thesubject
+    			to args.to 
+    			from args.from ?: pluginConfig.from
+    			subject args.subject
     			def bodyArgs = [view:viewName, model:binding]
     			if (pluginName) {
     			    bodyArgs.plugin = pluginName
@@ -88,13 +123,38 @@ class EmailConfirmationService implements ApplicationContextAware {
     	    }
 		} catch (Throwable t) {
 		    if (Environment.current == Environment.DEVELOPMENT) {
-		        log.warn "Mail sending failed but you're in development mode so I'm ignoring this fact, you can confirm using the link shown in the previous log output"
+		        log.warn "Mail sending failed but you're in development mode so I'm ignoring this fact, you can confirm using this link: ${binding.uri}"
                 log.error "Mail send failed", t
 		    } else {
 	            throw t
             }
 		}
 		return conf
+    }
+    
+    /**
+     * Legacy confirmation method
+     * @deprecated
+     */
+	def sendConfirmation(String emailAddress, String thesubject,  
+		    Map binding = null, String userToken = null) {
+        sendConfirmation(to:emailAddress, subject:thesubject, model:binding, id:userToken)
+	}
+
+	def callHandler(Map handlersMap, String handlerName, Map args, Closure legacyHandler) {
+	    def result
+		if (handlerName) {
+			def handler = handlersMap[handlerName]
+			if (handler) {
+			    result = handler.clone()( args )
+			} else {
+			    log.error "Confirmation of email address succeeded for [${conf.emailAddress}] but the handler specified [${conf.handlerName}] is not registered"
+			    result = [dir:'']
+			}
+		} else {
+	        result = legacyHandler()	
+	    }
+	    return result
 	}
 	
 	def checkConfirmation(String confirmationToken) {
@@ -107,13 +167,20 @@ class EmailConfirmationService implements ApplicationContextAware {
 				log.debug( "Notifying application of valid email confirmation for user token ${conf.userToken}, email ${conf.emailAddress}")
 			}
 			// Tell application it's ok
-			// @todo auto sense number of args
-			def result = onConfirmation?.clone().call(conf.emailAddress, conf.userToken)			
+			def result = callHandler(confirmedHandlers, conf.handlerName, [email:conf.emailAddress, id:conf.userToken], {
+                onConfirmation?.clone().call(conf.emailAddress, conf.userToken)					    
+			})
+			
 			conf.delete()
 			return [valid: true, action:result, email: conf.emailAddress, token:conf.userToken]
 		} else {
-			if (log.traceEnabled) log.trace("checkConfirmation did not find confirmation token: $confirmationToken")
-			def result = onInvalid?.clone().call(confirmationToken)
+			if (log.traceEnabled) {
+			    log.trace("checkConfirmation did not find confirmation token: $confirmationToken")
+		    }
+			def result = callHandler(invalidHandlers, conf.handlerName, [token:confirmationToken], {
+                onInvalid?.clone().call(confirmation)					    
+			})
+			
 			return [valid:false, action:result]
 		}
 	}
@@ -124,15 +191,18 @@ class EmailConfirmationService implements ApplicationContextAware {
 		}
 		def threshold = System.currentTimeMillis() - maxAge
 	    def staleConfirmations = PendingEmailConfirmation.findAllByTimestampLessThan(new Date(threshold))
+		def c = 0
 	    // @todo change this to a scrollable criteria to avoid blowing heap
 		// @todo need to clear the session occasionally!
-		def c = 0
 		staleConfirmations.each() {
 			// Tell application
 			if (log.debugEnabled) {
 				log.debug( "Notifying application of stale email confirmation for user token ${it.userToken}")
 			}
-			onTimeout( it.emailAddress, it.userToken )
+			callHandler(timeoutHandlers, conf.handlerName, [email:it.emailAddress, id:it.userToken], {
+    			onTimeout.clone().call( it.emailAddress, it.userToken )
+			})
+			
 			it.delete()
 			c++
 		}

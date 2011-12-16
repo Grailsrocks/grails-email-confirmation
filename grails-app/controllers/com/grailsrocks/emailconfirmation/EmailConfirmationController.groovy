@@ -26,8 +26,7 @@ class EmailConfirmationController {
 		if (log.traceEnabled) log.trace("Email confirmation controller invoked with token ${params.id}")
 		
 		// We should not decode params.id this but this is a hack for Grails 1.0.2 bug
-		def result = emailConfirmationService.checkConfirmation(
-		    GrailsUtil.grailsVersion == "1.0.2" ? params.id.decodeURL() : params.id)
+		def result = emailConfirmationService.checkConfirmation(params.id)
 
         // if callback specified args, do a redirect or closure invoke instead of our default view
 		if ( result.action ) {
