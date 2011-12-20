@@ -141,14 +141,14 @@ class EmailConfirmationService implements ApplicationContextAware {
         sendConfirmation(to:emailAddress, subject:thesubject, model:binding, id:userToken)
 	}
 
-	def callHandler(Map handlersMap, String handlerName, Map args, Closure legacyHandler) {
+	def callHandler(String callbackType, String handlerName, Map args, Closure legacyHandler) {
 	    def result
 		if (handlerName) {
-			def handler = handlersMap[handlerName]
+			def handler = this."${callbackType}Handlers"[handlerName]
 			if (handler) {
 			    result = handler.clone()( args )
 			} else {
-			    log.error "Confirmation of email address succeeded for [${conf.emailAddress}] but the handler specified [${conf.handlerName}] is not registered"
+			    log.error "Confirmation event for [${args.email}] occurred but the handler specified [${handlerName}] is not registered"
 			    result = [dir:'']
 			}
 		} else {
@@ -167,7 +167,7 @@ class EmailConfirmationService implements ApplicationContextAware {
 				log.debug( "Notifying application of valid email confirmation for user token ${conf.userToken}, email ${conf.emailAddress}")
 			}
 			// Tell application it's ok
-			def result = callHandler(confirmedHandlers, conf.handlerName, [email:conf.emailAddress, id:conf.userToken], {
+			def result = callHandler('confirmed', conf.handlerName, [email:conf.emailAddress, id:conf.userToken], {
                 onConfirmation?.clone().call(conf.emailAddress, conf.userToken)					    
 			})
 			
@@ -177,7 +177,7 @@ class EmailConfirmationService implements ApplicationContextAware {
 			if (log.traceEnabled) {
 			    log.trace("checkConfirmation did not find confirmation token: $confirmationToken")
 		    }
-			def result = callHandler(invalidHandlers, conf.handlerName, [token:confirmationToken], {
+			def result = callHandler('invalid', conf.handlerName, [token:confirmationToken], {
                 onInvalid?.clone().call(confirmation)					    
 			})
 			
@@ -199,7 +199,7 @@ class EmailConfirmationService implements ApplicationContextAware {
 			if (log.debugEnabled) {
 				log.debug( "Notifying application of stale email confirmation for user token ${it.userToken}")
 			}
-			callHandler(timeoutHandlers, conf.handlerName, [email:it.emailAddress, id:it.userToken], {
+			callHandler('timeout', conf.handlerName, [email:it.emailAddress, id:it.userToken], {
     			onTimeout.clone().call( it.emailAddress, it.userToken )
 			})
 			
