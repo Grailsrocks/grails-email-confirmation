@@ -29,7 +29,7 @@ class EmailConfirmationController {
 		def result = emailConfirmationService.checkConfirmation(params.id)
 
         // if callback specified args, do a redirect or closure invoke instead of our default view
-		if ( result.action ) {
+		if ( result.actionToTake ) {
         	flash.success = result.valid
         	if (result.valid) {
             	flash.email = result.email
@@ -37,11 +37,11 @@ class EmailConfirmationController {
         	}
 
             // Was the result a redirect args map?
-            if (result.action instanceof Map) {
-		        redirect( result.action)
-	        } else if (result.action instanceof Closure) {
+            if (result.actionToTake instanceof Map) {
+		        redirect( result.actionToTake)
+	        } else if (result.actionToTake instanceof Closure) {
 	            // No it was a closure to do application "magic" in our context
-	            def code = result.action.clone()
+	            def code = result.actionToTake.clone()
 	            code.delegate = this
 	            code.resolveStrategy = Closure.DELEGATE_FIRST
 	            code()

@@ -30,8 +30,10 @@ import grails.util.Environment
 
 class EmailConfirmationService implements ApplicationContextAware {
 	
+	static APPLICATION_HANDLER = 'application'
+
 	def mailService
-	
+
 	boolean transactional = true
 
 	def maxAge = 1000*60*60*24*30L // 30 days
@@ -55,15 +57,15 @@ class EmailConfirmationService implements ApplicationContextAware {
 	Map<String, Closure> invalidHandlers = new ConcurrentHashMap<String, Closure>()
 	Map<String, Closure> timeoutHandlers = new ConcurrentHashMap<String, Closure>()
 	
-	void addConfirmedHandler(String name, Closure handler) {
+	void addConfirmedHandler(Closure handler, String name = APPLICATION_HANDLER) {
 	    confirmedHandlers[name] = handler
 	}
 	
-	void addInvalidHandler(String name, Closure handler) {
+	void addInvalidHandler(Closure handler, String name = APPLICATION_HANDLER) {
 	    invalidHandlers[name] = handler
 	}
 	
-	void addTimeoutHandler(String name, Closure handler) {
+	void addTimeoutHandler(Closure handler, String name = APPLICATION_HANDLER) {
 	    timeoutHandlers[name] = handler
 	}
 	
@@ -146,12 +148,30 @@ class EmailConfirmationService implements ApplicationContextAware {
 		if (handlerName) {
 			def handler = this."${callbackType}Handlers"[handlerName]
 			if (handler) {
-			    result = handler.clone()( args )
+    			if (log.debugEnabled) {
+    				log.debug( "Notifying application of valid email confirmation ${args.email}, handler [${handlerName}]")
+    			}
+			    return handler.clone()( args )
 			} else {
-			    log.error "Confirmation event for [${args.email}] occurred but the handler specified [${handlerName}] is not registered"
-			    result = [dir:'']
+			    if (log.warnEnabled) {
+			        log.warn "Confirmation event for [${args.email}] occurred but the handler specified [${handlerName}] is not registered"
+		        }
 			}
+		} 
+
+		// If we get here, we're applying defaults / fallbacks
+		
+		def handler = this."${callbackType}Handlers"[APPLICATION_HANDLER]
+		if (handler) {
+			if (log.debugEnabled) {
+				log.debug( "Notifying application of valid email confirmation ${args.email}, default handler")
+			}
+		    return handler.clone()( args )
 		} else {
+		    // Legacy  only
+		    if (log.warnEnabled) {
+		        log.warn "DEPRECATED Calling legacy event handler, change your code to use emailConfirmationService.addXXXXHandler instead"
+	        }
 	        result = legacyHandler()	
 	    }
 	    return result
@@ -172,16 +192,16 @@ class EmailConfirmationService implements ApplicationContextAware {
 			})
 			
 			conf.delete()
-			return [valid: true, action:result, email: conf.emailAddress, token:conf.userToken]
+			return [valid: true, actionToTake:result, email: conf.emailAddress, token:conf.userToken]
 		} else {
 			if (log.traceEnabled) {
 			    log.trace("checkConfirmation did not find confirmation token: $confirmationToken")
 		    }
-			def result = callHandler('invalid', conf.handlerName, [token:confirmationToken], {
-                onInvalid?.clone().call(confirmation)					    
+			def result = callHandler('invalid', null, [token:confirmationToken], {
+                onInvalid?.clone().call(confirmationToken)					    
 			})
 			
-			return [valid:false, action:result]
+			return [valid:false, actionToTake:result]
 		}
 	}
 	
@@ -199,7 +219,7 @@ class EmailConfirmationService implements ApplicationContextAware {
 			if (log.debugEnabled) {
 				log.debug( "Notifying application of stale email confirmation for user token ${it.userToken}")
 			}
-			callHandler('timeout', conf.handlerName, [email:it.emailAddress, id:it.userToken], {
+			callHandler('timeout', it.handlerName, [email:it.emailAddress, id:it.userToken], {
     			onTimeout.clone().call( it.emailAddress, it.userToken )
 			})
 			
