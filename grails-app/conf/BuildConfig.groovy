@@ -28,13 +28,13 @@ grails.project.dependency.resolution = {
 
     plugins {
         build(":tomcat:$grailsVersion",
-              ":release:1.0.0.RC1") {
+              ":release:1.0.0") {
             export = false
         }
 
-	    compile(':plugin-platform:1.0.BUILD-SNAPSHOT')
+	    compile(':plugin-platform:1.0-SNAPSHOT')
         compile(':quartz:0.4.2')
-        compile(':mail:1.0-SNAPSHOT')
+        compile(':mail:1.0')
 
     }
 }

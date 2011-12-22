@@ -17,12 +17,12 @@ import grails.util.Environment
 
  
 class EmailConfirmationGrailsPlugin {
-	def version = "2.0.BUILD-SNAPSHOT"
+	def version = "2.0-SNAPSHOT"
 
     def grailsVersion = "1.3 > *"
 	def dependsOn = [
-	    pluginPlatform:'1.0.BUILD-SNAPSHOT > *',
-	    mail:"1.0-SNAPSHOT > *", 
+	    pluginPlatform:'1.0-SNAPSHOT > *',
+	    mail:"1.0 > *", 
 	    quartz:"0.4.2 > *"
 	]
 
