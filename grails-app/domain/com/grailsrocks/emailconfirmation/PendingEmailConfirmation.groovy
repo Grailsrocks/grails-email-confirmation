@@ -24,7 +24,7 @@ class PendingEmailConfirmation {
     String emailAddress
 	String confirmationToken = "?"
 	String userToken
-	String handlerName
+	String confirmationEvent
 	
 	Date timestamp = new Date()
 
@@ -45,7 +45,7 @@ class PendingEmailConfirmation {
 	static constraints = {
 	    emailAddress(size:1..80, email:true)
 		confirmationToken(size:1..80)
-		handlerName(nullable:true, size:0..80)
+		confirmationEvent(nullable:true, size:0..80)
 		// Allow quite a bit of space here for app supplied data
 		userToken(size:0..500, nullable: true, blank:true)
 	}

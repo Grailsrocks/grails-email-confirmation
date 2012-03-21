@@ -30,8 +30,6 @@ import grails.util.Environment
 
 class EmailConfirmationService implements ApplicationContextAware {
 	
-	static APPLICATION_HANDLER = 'application'
-
 	def mailService
 
 	boolean transactional = true
@@ -53,22 +51,6 @@ class EmailConfirmationService implements ApplicationContextAware {
 	
 	def grailsApplication
 	
-	Map<String, Closure> confirmedHandlers = new ConcurrentHashMap<String, Closure>()
-	Map<String, Closure> invalidHandlers = new ConcurrentHashMap<String, Closure>()
-	Map<String, Closure> timeoutHandlers = new ConcurrentHashMap<String, Closure>()
-	
-	void addConfirmedHandler(Closure handler, String name = APPLICATION_HANDLER) {
-	    confirmedHandlers[name] = handler
-	}
-	
-	void addInvalidHandler(Closure handler, String name = APPLICATION_HANDLER) {
-	    invalidHandlers[name] = handler
-	}
-	
-	void addTimeoutHandler(Closure handler, String name = APPLICATION_HANDLER) {
-	    timeoutHandlers[name] = handler
-	}
-	
 	def makeURL(token) {
 		//@todo this needs to change to do a reverse mapping lookup
 		//@todo also if uri already exists in binding, append token to it
@@ -78,22 +60,28 @@ class EmailConfirmationService implements ApplicationContextAware {
 	}
 	
 	/**
-	 * Send a new email confirmation 
+	 * Send a new email confirmation. This will trigger platform events when completed or timed out.
+	 * Invalid tokens generate a separate "emailConfirmation.invalid" event
 	 *
+	 * @param args Map of arguments:
 	 * to - Required, email address
 	 * id - Required, application-specific token used in callbacks when this confirmation is complete/invalid
 	 * subject - Required, subject for the email
-	 * handler - Required, handler name for event callbacks
+	 * event - Required, name for event callbacks, used as stem i.e. for "signupConfirmation" you'll get
+	 * "signupConfirmation.confirmed" or "signupConfirmation.timeout" events fired
 	 * from - Optional, sender from address, defaults to config's emailConfirmation.from
 	 * model - Optional, model to use in the email GSP view
 	 * view - Optional, path to GSP view to use for the email body
 	 * plugin - Optional, the "filesystem" name of the plugin
 	 */
 	def sendConfirmation(Map args) {
+		if (log.infoEnabled) {
+			log.info "Sending email confirmation mail to ${args.to}, callback events will be named [${args.event}.*], user data is [${args.id}])"
+		}
 		def conf = new PendingEmailConfirmation(
 		    emailAddress:args.to, 
 		    userToken:args.id, 
-		    handlerName:args.handler)
+		    confirmationEvent:args.event)
         conf.makeToken()
         
         if (!conf.save()) {
@@ -143,34 +131,15 @@ class EmailConfirmationService implements ApplicationContextAware {
         sendConfirmation(to:emailAddress, subject:thesubject, model:binding, id:userToken)
 	}
 
-	def callHandler(String callbackType, String handlerName, Map args, Closure legacyHandler) {
-	    def result
-		if (handlerName) {
-			def handler = this."${callbackType}Handlers"[handlerName]
-			if (handler) {
-    			if (log.debugEnabled) {
-    				log.debug( "Notifying application of valid email confirmation ${args.email}, handler [${handlerName}]")
-    			}
-			    return handler.clone()( args )
-			} else {
-			    if (log.warnEnabled) {
-			        log.warn "Confirmation event for [${args.email}] occurred but the handler specified [${handlerName}] is not registered"
-		        }
-			}
-		} 
-
-		// If we get here, we're applying defaults / fallbacks
-		
-		def handler = this."${callbackType}Handlers"[APPLICATION_HANDLER]
-		if (handler) {
-			if (log.debugEnabled) {
-				log.debug( "Notifying application of valid email confirmation ${args.email}, default handler")
-			}
-		    return handler.clone()( args )
-		} else {
-		    // Legacy  only
+	def fireEvent(String callbackType, String eventNameStem, Map args, Closure legacyHandler) {
+	    if (!eventNameStem) {
+	        eventNameStem = "emailConfirmation"
+	    }
+	    def result = event("${eventNameStem}.${callbackType}", args).value
+        if (!result) {
+		    // Legacy only
 		    if (log.warnEnabled) {
-		        log.warn "DEPRECATED Calling legacy event handler, change your code to use emailConfirmationService.addXXXXHandler instead"
+		        log.warn "DEPRECATED Calling legacy event handler, change your code to use platform events instead"
 	        }
 	        result = legacyHandler()	
 	    }
@@ -187,7 +156,7 @@ class EmailConfirmationService implements ApplicationContextAware {
 				log.debug( "Notifying application of valid email confirmation for user token ${conf.userToken}, email ${conf.emailAddress}")
 			}
 			// Tell application it's ok
-			def result = callHandler('confirmed', conf.handlerName, [email:conf.emailAddress, id:conf.userToken], {
+			def result = fireEvent('confirmed', conf.confirmationEvent, [email:conf.emailAddress, id:conf.userToken], {
                 onConfirmation?.clone().call(conf.emailAddress, conf.userToken)					    
 			})
 			
@@ -197,7 +166,7 @@ class EmailConfirmationService implements ApplicationContextAware {
 			if (log.traceEnabled) {
 			    log.trace("checkConfirmation did not find confirmation token: $confirmationToken")
 		    }
-			def result = callHandler('invalid', null, [token:confirmationToken], {
+			def result = fireEvent('invalid', null, [token:confirmationToken], {
                 onInvalid?.clone().call(confirmationToken)					    
 			})
 			
@@ -219,7 +188,7 @@ class EmailConfirmationService implements ApplicationContextAware {
 			if (log.debugEnabled) {
 				log.debug( "Notifying application of stale email confirmation for user token ${it.userToken}")
 			}
-			callHandler('timeout', it.handlerName, [email:it.emailAddress, id:it.userToken], {
+			fireEvent('timeout', it.confirmationEvent, [email:it.emailAddress, id:it.userToken], {
     			onTimeout.clone().call( it.emailAddress, it.userToken )
 			})
 			

@@ -21,7 +21,7 @@ class EmailConfirmationGrailsPlugin {
 
     def grailsVersion = "1.3 > *"
 	def dependsOn = [
-	    pluginPlatform:'1.0-SNAPSHOT > *',
+	    platformCore:'1.0.M1-SNAPSHOT > *',
 	    mail:"1.0 > *", 
 	    quartz:"0.4.2 > *"
 	]

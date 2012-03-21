@@ -36,7 +36,7 @@ grails.project.dependency.resolution = {
         }
 
         compile(':quartz:0.4.2')
-	    compile(':plugin-platform:1.0-SNAPSHOT')
+	    compile(':platform-core:1.0.M1-SNAPSHOT')
         compile(':mail:1.0')
     }
 }
