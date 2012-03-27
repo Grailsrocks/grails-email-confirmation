@@ -32,12 +32,12 @@ grails.project.dependency.resolution = {
     plugins {
         build(":tomcat:$grailsVersion",
               ":hibernate:$grailsVersion",
-              ":release:1.0.0") {
+              ":release:1.0.2-SNAPSHOT") {
             export = false
         }
 
         compile(':quartz:0.4.2')
-	    compile(':platform-core:1.0.M1-SNAPSHOT')
+	    compile(':platform-core:1.0.M1')
         compile(':mail:1.0')
     }
 }
