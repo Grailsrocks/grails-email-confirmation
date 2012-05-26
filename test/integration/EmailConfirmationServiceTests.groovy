@@ -15,27 +15,33 @@
  */
  
 import org.springframework.context.support.GenericApplicationContext
+
 import groovy.mock.interceptor.MockFor
 import org.springframework.core.io.ByteArrayResource
 
 import com.grailsrocks.emailconfirmation.*
 
 class EmailConfirmationServiceTests extends GroovyTestCase {
+	
+	def emailConfirmationService
+	
+	void testMakeUrl() {
+		final def TEST_TOKEN = 'TEST_TOKEN'
+		assertEquals 'http://localhost/confirm/' + TEST_TOKEN, emailConfirmationService.makeURL(TEST_TOKEN)
+	}
 
 	void testSendConfirmation() {
 		
-		def confirmer = new EmailConfirmationService()
-		
 		def sendMailCalled = false
 		
-		confirmer.mailService = new Expando()
-		confirmer.mailService.sendMail = { closure ->
+		emailConfirmationService.mailService = new Expando()
+		emailConfirmationService.mailService.sendMail = { closure ->
 			sendMailCalled = true
 		}
 		
 		def conf
-		confirmer.applicationContext = new GenericApplicationContext()
-		conf = confirmer.sendConfirmation( "marc@anyware.co.uk", 
+		emailConfirmationService.applicationContext = new GenericApplicationContext()
+		conf = emailConfirmationService.sendConfirmation( "marc@anyware.co.uk", 
 			"testing", 
 			[message:"hello", fromAddress:'tester@universe'],
 			"@@@token@@@")
@@ -57,21 +63,20 @@ class EmailConfirmationServiceTests extends GroovyTestCase {
 		
 		def callbackHit = false
 		
-		def confirmer = new EmailConfirmationService()
-		confirmer.onConfirmation = { email, userToken ->
+		emailConfirmationService.onConfirmation = { email, userToken ->
 			assertEquals 'bill@windows.com', email
 			assertEquals '$$$MyToken$$$', userToken
 			callbackHit = true
 			return [controller:'test', action:'dummy']
 		}
 		
-		def res = confirmer.checkConfirmation(pending.confirmationToken)
+		def res = emailConfirmationService.checkConfirmation(pending.confirmationToken)
 		
 		assert callbackHit
 		assertEquals true, res.valid
 		assertEquals "bill@windows.com", res.email
-		assertEquals "test", res.action.controller
-		assertEquals "dummy", res.action.action
+		assertEquals "test", res.actionToTake.controller
+		assertEquals "dummy", res.actionToTake.action
 	}
 
 }
