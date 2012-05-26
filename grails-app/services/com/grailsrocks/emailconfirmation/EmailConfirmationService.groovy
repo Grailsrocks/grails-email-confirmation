@@ -17,13 +17,11 @@ package com.grailsrocks.emailconfirmation
  
 import java.util.concurrent.ConcurrentHashMap
 
+import org.codehaus.groovy.grails.web.mapping.LinkGenerator
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.context.ApplicationContextAware
 import org.springframework.context.ApplicationContext
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
-import org.codehaus.groovy.grails.commons.ApplicationHolder
 
-import com.grailsrocks.emailconfirmation.*
 
 import grails.util.Environment
 
@@ -31,6 +29,8 @@ import grails.util.Environment
 class EmailConfirmationService implements ApplicationContextAware {
 	
 	def mailService
+	
+	LinkGenerator grailsLinkGenerator
 
 	boolean transactional = true
 
@@ -54,8 +54,7 @@ class EmailConfirmationService implements ApplicationContextAware {
 	def makeURL(token) {
 		//@todo this needs to change to do a reverse mapping lookup
 		//@todo also if uri already exists in binding, append token to it
-	    def grailsApplication = ApplicationHolder.application
-		def serverURL = grailsApplication.config.grails.serverURL ?: 'http://localhost:8080/'+grailsApplication.metadata.'app.name'
+		def serverURL = grailsLinkGenerator.serverBaseURL
     	"${serverURL}/confirm/${token.encodeAsURL()}"
 	}
 	
