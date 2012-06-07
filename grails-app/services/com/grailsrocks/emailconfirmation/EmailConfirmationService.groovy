@@ -29,6 +29,10 @@ import grails.util.Environment
 
 
 class EmailConfirmationService implements ApplicationContextAware {
+
+	static EVENT_TYPE_CONFIRMED = 'confirmed'
+	static EVENT_TYPE_INVALID = 'invalid'
+	static EVENT_TYPE_TIMEOUT = 'timeout'
 	
 	def mailService
 
@@ -81,7 +85,7 @@ class EmailConfirmationService implements ApplicationContextAware {
 		def conf = new PendingEmailConfirmation(
 		    emailAddress:args.to, 
 		    userToken:args.id, 
-		    confirmationEvent:args.event)
+		    confirmationEvent:args.eventScope ? args.eventScope+'#'+args.event : args.event)
         conf.makeToken()
         
         if (!conf.save()) {
@@ -131,11 +135,25 @@ class EmailConfirmationService implements ApplicationContextAware {
         sendConfirmation(to:emailAddress, subject:thesubject, model:binding, id:userToken)
 	}
 
-	def fireEvent(String callbackType, String eventNameStem, Map args, Closure legacyHandler) {
-	    if (!eventNameStem) {
-	        eventNameStem = "emailConfirmation"
-	    }
-	    def result = event("${eventNameStem}.${callbackType}", args).value
+	def fireEvent(String callbackType, String appEventPath, Map args, Closure legacyHandler) {
+	    
+        def eventScope
+        def n = appEventPath.indexOf('#')
+        if (n > -1) {
+            eventScope = appEventPath[0..n-1]
+            if (n < appEventPath.length) {
+                args.confirmationEvent = appEventPath[n+1..-1]
+            }
+        } else {
+            args.confirmationEvent = appEventPath
+        }
+	    def result
+	    if (eventScope) {
+	        result = event(callbackType, args).value
+        } else {
+	        result = event(scope:eventScope, topic:callbackType, args).value
+        }
+        
         if (!result) {
 		    // Legacy only
 		    if (log.warnEnabled) {
@@ -156,7 +174,7 @@ class EmailConfirmationService implements ApplicationContextAware {
 				log.debug( "Notifying application of valid email confirmation for user token ${conf.userToken}, email ${conf.emailAddress}")
 			}
 			// Tell application it's ok
-			def result = fireEvent('confirmed', conf.confirmationEvent, [email:conf.emailAddress, id:conf.userToken], {
+			def result = fireEvent(EVENT_TYPE_CONFIRMED, conf.confirmationEvent, [email:conf.emailAddress, id:conf.userToken], {
                 onConfirmation?.clone().call(conf.emailAddress, conf.userToken)					    
 			})
 			
@@ -166,7 +184,7 @@ class EmailConfirmationService implements ApplicationContextAware {
 			if (log.traceEnabled) {
 			    log.trace("checkConfirmation did not find confirmation token: $confirmationToken")
 		    }
-			def result = fireEvent('invalid', null, [token:confirmationToken], {
+			def result = fireEvent(EVENT_TYPE_INVALID, null, [token:confirmationToken], {
                 onInvalid?.clone().call(confirmationToken)					    
 			})
 			
@@ -188,7 +206,7 @@ class EmailConfirmationService implements ApplicationContextAware {
 			if (log.debugEnabled) {
 				log.debug( "Notifying application of stale email confirmation for user token ${it.userToken}")
 			}
-			fireEvent('timeout', it.confirmationEvent, [email:it.emailAddress, id:it.userToken], {
+			fireEvent(EVENT_TYPE_TIMEOUT, it.confirmationEvent, [email:it.emailAddress, id:it.userToken], {
     			onTimeout.clone().call( it.emailAddress, it.userToken )
 			})
 			
