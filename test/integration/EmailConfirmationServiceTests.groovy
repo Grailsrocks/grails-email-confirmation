@@ -57,21 +57,25 @@ class EmailConfirmationServiceTests extends GroovyTestCase {
 		
 		def callbackHit = false
 		
-		def confirmer = new EmailConfirmationService()
-		confirmer.onConfirmation = { email, userToken ->
-			assertEquals 'bill@windows.com', email
-			assertEquals '$$$MyToken$$$', userToken
+		def svc = new EmailConfirmationService()
+		svc.metaClass.event = { String topic, data ->
+            assert topic == 'confirmed'
+			assert 'bill@windows.com' == data.email
+			assert '$$$MyToken$$$' == data.id
 			callbackHit = true
-			return [controller:'test', action:'dummy']
+			return [value:[controller:'test', action:'dummy']]
+		}
+		svc.metaClass.event = { Map args ->
+		    fail "Should never call this event variant, there is no event scope set"
 		}
 		
-		def res = confirmer.checkConfirmation(pending.confirmationToken)
+		def res = svc.checkConfirmation(pending.confirmationToken)
 		
 		assert callbackHit
 		assertEquals true, res.valid
 		assertEquals "bill@windows.com", res.email
-		assertEquals "test", res.action.controller
-		assertEquals "dummy", res.action.action
+		assertEquals "test", res.actionToTake.controller
+		assertEquals "dummy", res.actionToTake.action
 	}
 
 }

@@ -138,20 +138,23 @@ class EmailConfirmationService implements ApplicationContextAware {
 	def fireEvent(String callbackType, String appEventPath, Map args, Closure legacyHandler) {
 	    
         def eventScope
+        if (!appEventPath) {
+            appEventPath = ''
+        }
         def n = appEventPath.indexOf('#')
         if (n > -1) {
             eventScope = appEventPath[0..n-1]
-            if (n < appEventPath.length) {
+            if (n < appEventPath.size()) {
                 args.confirmationEvent = appEventPath[n+1..-1]
             }
         } else {
             args.confirmationEvent = appEventPath
         }
 	    def result
-	    if (eventScope) {
+	    if (!eventScope) {
 	        result = event(callbackType, args).value
         } else {
-	        result = event(scope:eventScope, topic:callbackType, args).value
+	        result = event(scope:eventScope, topic:callbackType, data:args).value
         }
         
         if (!result) {
