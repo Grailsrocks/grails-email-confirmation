@@ -14,12 +14,20 @@
  * limitations under the License.
  */
  
+import grails.util.Environment
+ 
 class EmailConfirmationUrlMappings {
     static mappings = {
         // @todo parameterize this
         "/confirm/$id?" {
             controller = 'emailConfirmation'
             action = "index"
+        }
+        
+        if (Environment.current == Environment.TEST) {
+            "/test/tools/emailconfirmation/$action/$id" {
+                controller = "emailConfirmationTestTools"
+            }
         }
     }	
 }
