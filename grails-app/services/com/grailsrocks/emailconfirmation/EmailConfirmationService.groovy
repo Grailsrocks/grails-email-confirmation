@@ -100,7 +100,7 @@ class EmailConfirmationService implements ApplicationContextAware {
 		}
 		
 		def defaultView = args.view == null
-		def viewName = defaultView ? "/emailconfirmation/mail/confirmationRequest" : args.view
+		def viewName = defaultView ? "/emailConfirmation/mail/confirmationRequest" : args.view
         def pluginName = defaultView ? "email-confirmation" : args.plugin
 
 		try {
@@ -161,8 +161,8 @@ class EmailConfirmationService implements ApplicationContextAware {
 		    if (log.warnEnabled) {
 		        log.warn "DEPRECATED Calling legacy event handler, change your code to use platform events instead"
 	        }
-	        result = legacyHandler()	
-	    }
+	        result = legacyHandler(args)	
+	    }   
 	    return result
 	}
 	
