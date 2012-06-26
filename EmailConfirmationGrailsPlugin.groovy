@@ -17,7 +17,7 @@ import grails.util.Environment
 
  
 class EmailConfirmationGrailsPlugin {
-	def version = "2.0.4-SNAPSHOT"
+	def version = "2.0.5-SNAPSHOT"
 
     def grailsVersion = "1.3 > *"
 
