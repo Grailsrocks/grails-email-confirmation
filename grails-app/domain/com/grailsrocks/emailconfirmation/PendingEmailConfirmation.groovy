@@ -18,7 +18,7 @@ package com.grailsrocks.emailconfirmation
  
 import java.security.*
 
-class PendingEmailConfirmation { 
+class PendingEmailConfirmation implements Serializable { 
     static prng = new SecureRandom()
     
     String emailAddress
