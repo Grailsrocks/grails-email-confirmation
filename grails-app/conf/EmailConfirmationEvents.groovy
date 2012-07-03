@@ -1,3 +1,8 @@
+/*
+ * These events are sent to the application scope by default
+ * Plugins can supply a custom namespace and event when requestion a confirmation using event + eventNamespace args
+ * and if supplied these events will be send using the event as a prefix i.e. "signup.confirmed" if the event was passed as "signup"
+ */
 events = {
     /*
      * Triggered when a confirmation occurs.

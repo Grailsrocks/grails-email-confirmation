@@ -84,7 +84,7 @@ class EmailConfirmationService implements ApplicationContextAware {
 		def conf = new PendingEmailConfirmation(
 		    emailAddress:args.to, 
 		    userToken:args.id, 
-		    confirmationEvent:args.eventScope ? args.eventScope+'#'+args.event : args.event)
+		    confirmationEvent:args.namespace ? args.namespace+'#'+args.event : args.event)
         conf.makeToken()
         
         if (!conf.save()) {
@@ -136,24 +136,27 @@ class EmailConfirmationService implements ApplicationContextAware {
 
 	def fireEvent(String callbackType, String appEventPath, Map args, Closure legacyHandler) {
 	    
-        def eventScope
+        def eventNamespace
+        def eventTopic
         if (!appEventPath) {
             appEventPath = ''
         }
         def n = appEventPath.indexOf('#')
         if (n > -1) {
-            eventScope = appEventPath[0..n-1]
+            eventNamespace = appEventPath[0..n-1]
             if (n < appEventPath.size()) {
-                args.confirmationEvent = appEventPath[n+1..-1]
+                eventTopic = appEventPath[n+1..-1]
             }
         } else {
-            args.confirmationEvent = appEventPath
+            eventTopic = appEventPath
         }
 	    def result
-	    if (!eventScope) {
-	        result = event(callbackType, args).value
+	    eventTopic = eventTopic ? "${eventTopic}.${callbackType}" : callbackType
+	    if (!eventNamespace) {
+	        // Assume its an app event
+	        result = event(eventTopic, args).value
         } else {
-	        result = event(scope:eventScope, topic:callbackType, data:args).value
+	        result = event(namespace:eventNamespace, topic:eventTopic, data:args).value
         }
         
         if (!result) {
