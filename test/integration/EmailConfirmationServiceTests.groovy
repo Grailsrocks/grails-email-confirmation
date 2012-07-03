@@ -66,7 +66,7 @@ class EmailConfirmationServiceTests extends GroovyTestCase {
 			return [value:[controller:'test', action:'dummy']]
 		}
 		svc.metaClass.event = { Map args ->
-		    fail "Should never call this event variant, there is no event scope set"
+		    fail "Should never call this event variant, there is no event namespace set"
 		}
 		
 		def res = svc.checkConfirmation(pending.confirmationToken)
