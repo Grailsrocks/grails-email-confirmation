@@ -80,12 +80,12 @@ class EmailConfirmationService implements ApplicationContextAware {
 	 */
 	def sendConfirmation(Map args) {
 		if (log.infoEnabled) {
-			log.info "Sending email confirmation mail to ${args.to}, callback events will be named [${args.event}.*], user data is [${args.id}])"
+			log.info "Sending email confirmation mail to ${args.to}, callback events will be named [${args.event}.*] in namespace [${args.eventNamespace}], user data is [${args.id}])"
 		}
 		def conf = new PendingEmailConfirmation(
 		    emailAddress:args.to, 
 		    userToken:args.id, 
-		    confirmationEvent:args.namespace ? args.namespace+'#'+args.event : args.event)
+		    confirmationEvent:args.eventNamespace ? args.eventNamespace+'#'+args.event : args.event)
         conf.makeToken()
         
         if (!conf.save()) {
@@ -152,21 +152,24 @@ class EmailConfirmationService implements ApplicationContextAware {
             eventTopic = appEventPath
         }
 	    def result
+	    // If app-supplied callback topic, use that plus callback type, else just our declared callback types
 	    eventTopic = eventTopic ? "${eventTopic}.${callbackType}" : callbackType
 	    if (!eventNamespace) {
 	        // Assume its an app event
-	        result = event(eventTopic, args).value
+	        result = event(topic:eventTopic, namespace:'app', data:args).value
+        
+            if (!result) {
+    		    // Legacy only
+    		    if (log.warnEnabled) {
+    		        log.warn "DEPRECATED Calling legacy event handler, change your code to use platform events instead"
+    	        }
+    	        result = legacyHandler(args)	
+    	    }   
+
         } else {
 	        result = event(namespace:eventNamespace, topic:eventTopic, data:args).value
-        }
-        
-        if (!result) {
-		    // Legacy only
-		    if (log.warnEnabled) {
-		        log.warn "DEPRECATED Calling legacy event handler, change your code to use platform events instead"
-	        }
-	        result = legacyHandler(args)	
-	    }   
+        } 
+
 	    return result
 	}
 	
