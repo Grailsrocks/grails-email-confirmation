@@ -30,10 +30,10 @@ class EmailConfirmationController {
 
         // if callback specified args, do a redirect or closure invoke instead of our default view
 		if ( result.actionToTake ) {
-        	flash.success = result.valid
+        	pluginFlash.success = result.valid
         	if (result.valid) {
-            	flash.email = result.email
-            	flash.token = result.token
+            	pluginFlash.email = result.email
+            	pluginFlash.token = result.token
         	}
 
             // Was the result a redirect args map?
