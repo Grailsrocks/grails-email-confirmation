@@ -7,7 +7,7 @@ class Base62Codec {
         if (!(value instanceof byte[]) || (value instanceof Byte[])) {
             value = value?.toString().getBytes('UTF-8')
         }
-        def base10 = new BigInteger(value)
+        def base10 = new BigInteger(1, value)
 
         def digitMax = BASE62.size().toInteger()
 
