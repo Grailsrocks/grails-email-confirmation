@@ -62,6 +62,10 @@ class EmailConfirmationService implements ApplicationContextAware {
 		def serverURL = grailsApplication.config.grails.serverURL ?: 'http://localhost:8080/'+grailsApplication.metadata.'app.name'
     	"${serverURL}/confirm/${token.encodeAsURL()}"
 	}
+
+	private makeConfirmationEventString(Map args) {
+        args.eventNamespace ? args.eventNamespace+'#'+args.event : args.event	    
+	}
 	
 	/**
 	 * Send a new email confirmation. This will trigger platform events when completed or timed out.
@@ -85,7 +89,7 @@ class EmailConfirmationService implements ApplicationContextAware {
 		def conf = new PendingEmailConfirmation(
 		    emailAddress:args.to, 
 		    userToken:args.id, 
-		    confirmationEvent:args.eventNamespace ? args.eventNamespace+'#'+args.event : args.event)
+		    confirmationEvent:makeConfirmationEventString(args))
         conf.makeToken()
         
         if (!conf.save()) {
@@ -135,6 +139,29 @@ class EmailConfirmationService implements ApplicationContextAware {
         sendConfirmation(to:emailAddress, subject:thesubject, model:binding, id:userToken)
 	}
 
+    def findLastConfirmationUrlFor(String email, Map args) {
+        def confirmationEvent = makeConfirmationEventString(args)
+	    def userToken = args.id
+	    
+	    def pending = PendingEmailConfirmation.withCriteria({
+	        eq('emailAddress', email)
+	        if (confirmationEvent) {
+	            eq('confirmationEvent', confirmationEvent)
+	        }
+	        if (userToken) {
+	            eq('userToken', userToken)
+	        }
+	        order('timestamp', 'desc')
+	        maxResults(1)
+	    })
+	    
+	    if (pending.size()) {
+	        return makeURL(pending[0].confirmationToken)
+	    } else {
+	        return null
+	    }
+    }
+    
 	def fireEvent(String callbackType, String appEventPath, Map args, Closure legacyHandler) {
 	    
         def eventNamespace
