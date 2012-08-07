@@ -6,9 +6,9 @@ grails.project.test.reports.dir = "target/test-reports"
 grails.project.dependency.resolution = {
     // inherit Grails' default dependencies
     inherits("global") {
-        // uncomment to disable ehcache
-        excludes 'xerces', 'xml-apis'
+        excludes "xml-apis", "xerces"
     }
+    
     log "warn" // log level of Ivy resolver, either 'error', 'warn', 'info', 'debug' or 'verbose'
     repositories {
 		grailsPlugins()
