@@ -17,7 +17,7 @@ import grails.util.Environment
 
  
 class EmailConfirmationGrailsPlugin {
-	def version = "2.0.6-SNAPSHOT"
+	def version = "2.0.6"
 
     def grailsVersion = "1.3 > *"
 
@@ -33,7 +33,7 @@ class EmailConfirmationGrailsPlugin {
     def authorEmail = "marc@grailsrocks.com"
     def title = "Email Confirmation"
     def description = '''\\
-Send emails to users to perform click-through confirmations of any kinds.
+Send emails to users to perform click-through confirmations of any kind.
 '''
 
         // URL to the plugin's documentation
