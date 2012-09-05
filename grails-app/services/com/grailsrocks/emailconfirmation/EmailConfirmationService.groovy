@@ -182,7 +182,7 @@ class EmailConfirmationService implements ApplicationContextAware {
 	    eventTopic = eventTopic ? "${eventTopic}.${callbackType}" : callbackType
 	    if (!eventNamespace) {
 	        // Assume its an app event
-	        result = event(topic:eventTopic, namespace:'app', data:args).value
+	        result = event(topic:eventTopic, namespace:'app', data:args, params:[fork:false]).value
         
             if (!result) {
     		    // Legacy only
@@ -193,7 +193,7 @@ class EmailConfirmationService implements ApplicationContextAware {
     	    }   
 
         } else {
-	        result = event(namespace:eventNamespace, topic:eventTopic, data:args).value
+	        result = event(namespace:eventNamespace, topic:eventTopic, data:args, fork:false).value
         } 
 
 	    return result
