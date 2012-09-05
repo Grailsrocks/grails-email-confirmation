@@ -77,6 +77,7 @@ class EmailConfirmationService implements ApplicationContextAware {
 	 * subject - Required, subject for the email
 	 * event - Required, name for event callbacks, used as stem i.e. for "signupConfirmation" you'll get
 	 * "signupConfirmation.confirmed" or "signupConfirmation.timeout" events fired
+     * eventNamespace - Optional, namespaces the events triggered e.g. so that your plugin receives them
 	 * from - Optional, sender from address, defaults to config's emailConfirmation.from
 	 * model - Optional, model to use in the email GSP view
 	 * view - Optional, path to GSP view to use for the email body
