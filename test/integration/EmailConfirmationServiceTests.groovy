@@ -64,14 +64,14 @@ class EmailConfirmationServiceTests extends GroovyTestCase {
 		def callbackHit = false
 		
 		emailConfirmationService.metaClass.event = { String topic, data ->
-            assert topic == 'confirmed'
-			assert 'bill@windows.com' == data.email
-			assert '$$$MyToken$$$' == data.id
-			callbackHit = true
-			return [value:[controller:'test', action:'dummy']]
+		    fail "Should never call this event variant"
 		}
 		emailConfirmationService.metaClass.event = { Map args ->
-		    fail "Should never call this event variant, there is no event namespace set"
+            assert args.topic == 'confirmed'
+			assert 'bill@windows.com' == args.data.email
+			assert '$$$MyToken$$$' == args.data.id
+			callbackHit = true
+			return [value:[controller:'test', action:'dummy']]
 		}
 		
 		def res = emailConfirmationService.checkConfirmation(pending.confirmationToken)
