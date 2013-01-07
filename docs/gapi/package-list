@@ -1,0 +1,9 @@
+DefaultPackage
+grails-app.conf
+grails-app.controllers.com.grailsrocks.emailconfirmation
+grails-app.domain.com.grailsrocks.emailconfirmation
+grails-app.jobs.com.grailsrocks.emailconfirmation
+grails-app.services.com.grailsrocks.emailconfirmation
+grails-app.utils.com.grailsrocks.emailconfirmation
+test.integration
+test.unit
