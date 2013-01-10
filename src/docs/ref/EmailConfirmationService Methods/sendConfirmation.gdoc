@@ -1,0 +1,44 @@
+h1. sendConfirmation
+
+The @sendConfirmation@ method of the @emailConfirmationService@ performs the act of generating, storing and emailing a confirmation and its related data.
+
+You call this method from services or controllers to start the process of performing a confirmation.
+
+The user should receive an email containing the url to click to perform the confirmation, at which point an
+event will be received by your application indicating who confirmed and what the nature of that confirmation was.
+
+h2. Examples
+
+{code}
+// Send a simple confirmation
+emailConfirmationService.sendConfirmation(to:params.email, subject:"Please confirm!")
+
+// Send a simple confirmation
+emailConfirmationService.sendConfirmation(to:params.email, subject:"Please confirm!")
+
+{code}
+
+Events are generated when the user clicks through the link in the email successfully, or if they click on an invalid (already used or malformed) link or a link expires because it has not been used within the timeout period (default: 30 days).
+
+h2. Method Arguments
+
+{table}
+Name | Description
+args | Map of arguments
+{table}
+
+h2. Supported Map arguments
+
+{table}
+Name | Description
+to | Required, email address
+id | Required, application-specific token used in callbacks when this confirmation is complete/invalid
+subject | Required, subject for the email
+event | Required, name for event callbacks, used as stem i.e. for "signupConfirmation" you'll get
+"signupConfirmation.confirmed" or "signupConfirmation.timeout" events fired
+eventNamespace | Optional, namespaces the events triggered e.g. so that your plugin receives them
+from | Optional, sender from address, defaults to config's emailConfirmation.from
+model | Optional, model to use in the email GSP view
+view | Optional, path to GSP view to use for the email body
+plugin | Optional, the "filesystem" name of the plugin
+{table}

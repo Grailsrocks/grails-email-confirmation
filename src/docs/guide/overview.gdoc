@@ -1,15 +1,18 @@
+The Email Confirmation plugin allows you to send any number of confirmation emails to users, for any purpose you like.
 
-This is an example documentation template. The syntax format is similar to "Textile":http://textile.thresholdstate.com/.
+A confirmation email contains the text you wish to send, and a link back to the plugin which.
+If the user clicks the link your application will receive a callback event and can then redirect the user to 
+the appropriate page after noting the confirmation occurred.
 
-You can apply formatting such as *bold*, _italic_ and @code@. Bullets are possible too:
+Version 2.0 and higher have been reworked to leverage the events mechanisms in [Platform Core|http://grailsrocks.github.com/grails-platform-core]
+instead of the nasty callback mechanism of 1.x, and sending of mail has been abstracted so that you can push mail to e.g. a queue instead.
 
-* Bullet 1
-* Bullet 2
+h2. The User Guide ends there!
 
-As well as numbered lists:
+This plugin is free (as in beer) open source. In order to get some return on the development effort, the guide
+documentation takes the form of a commercial e-book [The Email Confirmation Plugin|http://leanpub.com/the-grails-email-confirmation-plugin] for as low as $2.99.
 
-# Number 1
-# Number 2
+Reference documentation is included here, but you will find the e-book an invaluable guide to getting going and making the most of the plugin.
 
-The documentation also handles links to [guide items|guide:1. Introduction] as well as [reference|items]
-        
+I greatly appreciate any support you can give.
+
