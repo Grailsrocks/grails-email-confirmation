@@ -17,6 +17,7 @@ package com.grailsrocks.emailconfirmation
  
 import java.util.concurrent.ConcurrentHashMap
 
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.context.ApplicationContextAware
 import org.springframework.context.ApplicationContext
@@ -30,12 +31,10 @@ import grails.util.Environment
 import java.rmi.server.UID
 import java.security.*
 
-
-
 class EmailConfirmationService implements ApplicationContextAware {
 
     static prng = new SecureRandom()
-    
+
 	static EVENT_TYPE_CONFIRMED = 'confirmed'
 	static EVENT_TYPE_INVALID = 'invalid'
 	static EVENT_TYPE_TIMEOUT = 'timeout'
@@ -97,6 +96,7 @@ class EmailConfirmationService implements ApplicationContextAware {
 	 * view - Optional, path to GSP view to use for the email body
 	 * plugin - Optional, the "filesystem" name of the plugin
 	 */
+    @Transactional
 	def sendConfirmation(Map args) {
 		if (log.infoEnabled) {
 			log.info "Sending email confirmation mail to ${args.to}, callback events will be named [${args.event}.*] in namespace [${args.eventNamespace}], user data is [${args.id}])"
@@ -153,6 +153,7 @@ class EmailConfirmationService implements ApplicationContextAware {
      * Legacy confirmation method
      * @deprecated
      */
+    @Transactional
 	def sendConfirmation(String emailAddress, String thesubject,  
 		    Map binding = null, String userToken = null) {
         sendConfirmation(to:emailAddress, subject:thesubject, model:binding, id:userToken)
@@ -162,6 +163,7 @@ class EmailConfirmationService implements ApplicationContextAware {
      * Find the last confirmation URL sent to a given address, useful for tests that 
      * don't want to receive emails and parse them in order to provide a confirmation
      */
+    @Transactional
     def findLastConfirmationUrlFor(String email, Map args) {
         def confirmationEvent = makeConfirmationEventString(args)
 	    def userToken = args.id
@@ -226,11 +228,13 @@ class EmailConfirmationService implements ApplicationContextAware {
     /**
      * Validate a confirmation token and return a Map indicating "valid" and "actionToTake"
      */
+    @Transactional
 	def checkConfirmation(String confirmationToken) {
 		if (log.traceEnabled) log.trace("checkConfirmation looking for confirmation token: $confirmationToken")
 		def conf = PendingEmailConfirmation.findByConfirmationToken(confirmationToken)
-        // @todo have to lock this if found, before deleting, otherwise a "double click" on a link
-        // could cause 2 events to the app and then an exception
+        if (conf) {
+            conf = PendingEmailConfirmation.lock(conf.ident())
+        }
 
 		// 100% double check that the token in the found object matches exactly. Some lame databases
 		// are case insensitive for searches, which reduces the possible token space
@@ -257,27 +261,35 @@ class EmailConfirmationService implements ApplicationContextAware {
 		}
 	}
 	
+    @Transactional
 	void cullStaleConfirmations() {
 		if (log.infoEnabled) {
 			log.info( "Checking for stale email confirmations...")
 		}
 		def threshold = System.currentTimeMillis() - maxAge
-	    def staleConfirmations = PendingEmailConfirmation.findAllByTimestampLessThan(new Date(threshold))
+	    def staleConfirmationIds = PendingEmailConfirmation.withCriteria {
+            projections {
+                property('id')
+            }
+            lt('timestamp', new Date(threshold))
+        }
+
 		def c = 0
-	    // @todo change this to a scrollable criteria to avoid blowing heap
-		// @todo need to clear the session occasionally!
-        // @todo make this concurrency safe
-		staleConfirmations.each() {
-			// Tell application
-			if (log.debugEnabled) {
-				log.debug( "Notifying application of stale email confirmation for user token ${it.userToken}")
-			}
-			fireEvent(EVENT_TYPE_TIMEOUT, it.confirmationEvent, [email:it.emailAddress, id:it.userToken], {
-    			onTimeout.clone().call( it.emailAddress, it.userToken )
-			})
-			
-			it.delete()
-			c++
+        // This is unlikely to be too expensive for most people
+        staleConfirmationIds.each { id ->
+            def confirmation = PendingEmailConfirmation.lock(id)
+            if (confirmation) {   
+    			// Tell application
+    			if (log.debugEnabled) {
+    				log.debug( "Notifying application of stale email confirmation for user token ${it.userToken}")
+    			}
+    			fireEvent(EVENT_TYPE_TIMEOUT, it.confirmationEvent, [email:it.emailAddress, id:it.userToken], {
+        			onTimeout.clone().call( it.emailAddress, it.userToken )
+    			})
+    			
+    			it.delete()
+    			c++
+            }
 		}
 		if (log.infoEnabled) {
 			log.info( "Done check for stale email confirmations, found $c")
