@@ -52,7 +52,7 @@ class EmailConfirmationServiceTests extends GroovyTestCase {
 		
 	void testCheckConfirmation() {
 		def pending = new PendingEmailConfirmation(userToken: '$$$MyToken$$$', emailAddress:"bill@windows.com")
-        pending.makeToken()
+        pending.confirmationToken = "asdasdsadasdasdasdasdas"
         assert pending.save()
 		
 		def callbackHit = false

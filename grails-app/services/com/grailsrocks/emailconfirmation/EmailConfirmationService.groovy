@@ -27,9 +27,15 @@ import com.grailsrocks.emailconfirmation.*
 
 import grails.util.Environment
 
+import java.rmi.server.UID
+import java.security.*
+
+
 
 class EmailConfirmationService implements ApplicationContextAware {
 
+    static prng = new SecureRandom()
+    
 	static EVENT_TYPE_CONFIRMED = 'confirmed'
 	static EVENT_TYPE_INVALID = 'invalid'
 	static EVENT_TYPE_TIMEOUT = 'timeout'
@@ -67,6 +73,14 @@ class EmailConfirmationService implements ApplicationContextAware {
         args.eventNamespace ? args.eventNamespace+'#'+args.event : args.event	    
 	}
 	
+    void makeToken(confirmation)
+    {
+        def uid = confirmation.emailAddress + new UID().toString() + prng.nextLong() + System.currentTimeMillis()
+        def hash = uid.encodeAsSHA256Bytes()
+        def token = hash.encodeAsBase62()
+        confirmation.confirmationToken = token
+    }
+
 	/**
 	 * Send a new email confirmation. This will trigger platform events when completed or timed out.
 	 * Invalid tokens generate a separate "emailConfirmation.invalid" event
@@ -91,8 +105,12 @@ class EmailConfirmationService implements ApplicationContextAware {
 		    emailAddress:args.to, 
 		    userToken:args.id, 
 		    confirmationEvent:makeConfirmationEventString(args))
-        conf.makeToken()
+        makeToken(conf)
         
+        if (log.debugEnabled) {
+            log.debug "Created email confirmation token [${conf.confirmationToken}] for mail to ${conf.emailAddress}"
+        }
+
         if (!conf.save()) {
 			throw new IllegalArgumentException( "Unable to save pending confirmation: ${conf.errors}")
 		}
@@ -138,8 +156,12 @@ class EmailConfirmationService implements ApplicationContextAware {
 	def sendConfirmation(String emailAddress, String thesubject,  
 		    Map binding = null, String userToken = null) {
         sendConfirmation(to:emailAddress, subject:thesubject, model:binding, id:userToken)
-	}
+	} 
 
+    /**
+     * Find the last confirmation URL sent to a given address, useful for tests that 
+     * don't want to receive emails and parse them in order to provide a confirmation
+     */
     def findLastConfirmationUrlFor(String email, Map args) {
         def confirmationEvent = makeConfirmationEventString(args)
 	    def userToken = args.id
@@ -201,9 +223,15 @@ class EmailConfirmationService implements ApplicationContextAware {
 	    return result
 	}
 	
+    /**
+     * Validate a confirmation token and return a Map indicating "valid" and "actionToTake"
+     */
 	def checkConfirmation(String confirmationToken) {
 		if (log.traceEnabled) log.trace("checkConfirmation looking for confirmation token: $confirmationToken")
 		def conf = PendingEmailConfirmation.findByConfirmationToken(confirmationToken)
+        // @todo have to lock this if found, before deleting, otherwise a "double click" on a link
+        // could cause 2 events to the app and then an exception
+
 		// 100% double check that the token in the found object matches exactly. Some lame databases
 		// are case insensitive for searches, which reduces the possible token space
 		if (conf && (conf.confirmationToken == confirmationToken)) {
@@ -238,6 +266,7 @@ class EmailConfirmationService implements ApplicationContextAware {
 		def c = 0
 	    // @todo change this to a scrollable criteria to avoid blowing heap
 		// @todo need to clear the session occasionally!
+        // @todo make this concurrency safe
 		staleConfirmations.each() {
 			// Tell application
 			if (log.debugEnabled) {

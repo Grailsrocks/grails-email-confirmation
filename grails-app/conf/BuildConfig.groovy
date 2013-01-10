@@ -27,6 +27,11 @@ grails.project.dependency.resolution = {
         // specify dependencies here under either 'build', 'compile', 'runtime', 'test' or 'provided' scopes eg.
 
         // runtime 'mysql:mysql-connector-java:5.1.5'
+
+        build('org.grails:grails-gdoc-engine:1.0.1') {
+            export = false
+        }
+
     }
 
     plugins {
@@ -36,12 +41,8 @@ grails.project.dependency.resolution = {
             export = false
         }
 
-        build('org.grails:grails-gdoc-engine:1.0.1') {
-            export = false
-        }
-
         compile(':quartz:1.0-RC2')
-	    compile(':platform-core:1.0.M3')
+	    compile(':platform-core:1.0.RC3')
         compile(':mail:1.0')
     }
 }

@@ -16,26 +16,13 @@
  
 package com.grailsrocks.emailconfirmation
  
-import java.security.*
-
 class PendingEmailConfirmation implements Serializable { 
-    static prng = new SecureRandom()
-    
     String emailAddress
 	String confirmationToken = "?"
 	String userToken
 	String confirmationEvent
 	
 	Date timestamp = new Date()
-
-    void makeToken()
-    {
-        // @todo replace deadbeef with some random hex digits
-        def uidBytes = new byte[30]
-        prng.nextBytes(uidBytes)
-        
-		confirmationToken = uidBytes.encodeAsBase62()
-    }
 
     static mapping = {
         confirmationToken index:'emailconf_token_Idx'
@@ -44,7 +31,7 @@ class PendingEmailConfirmation implements Serializable {
     
 	static constraints = {
 	    emailAddress(size:1..80, email:true)
-		confirmationToken(size:1..80)
+		confirmationToken(unique:true,size:1..80)
 		confirmationEvent(nullable:true, size:0..80)
 		// Allow quite a bit of space here for app supplied data
 		userToken(size:0..500, nullable: true, blank:true)

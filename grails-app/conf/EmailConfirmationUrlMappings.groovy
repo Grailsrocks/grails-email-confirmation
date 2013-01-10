@@ -24,7 +24,7 @@ class EmailConfirmationUrlMappings {
             action = "index"
         }
         
-        if (Environment.current == Environment.TEST) {
+        if (Environment.current in [Environment.TEST, Environment.DEVELOPMENT]) {
             "/test/tools/emailconfirmation/$action/$id" {
                 controller = "emailConfirmationTestTools"
             }
