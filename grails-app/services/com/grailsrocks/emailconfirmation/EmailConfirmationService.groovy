@@ -51,9 +51,9 @@ class EmailConfirmationService implements ApplicationContextAware {
 	 */
 	Closure onConfirmation = { email, userToken -> log.error "Your application received an email confirmation event it did not handle!"}
 	
-	Closure onInvalid = { invalidToken -> log.error  "Your application received an invalid email cofirmation event it did not handle!"}
+	Closure onInvalid = { invalidToken -> log.error  "Your application received an invalid email confirmation event it did not handle!"}
 	
-	Closure onTimeout = { email, userToken -> log.error  "Your application received an email cofirmation timeout event it did not handle!"}
+	Closure onTimeout = { email, userToken -> log.error  "Your application received an email confirmation timeout event it did not handle!"}
 	
 	// Auto populated by ApplicationContextAware
 	ApplicationContext applicationContext
@@ -220,6 +220,13 @@ class EmailConfirmationService implements ApplicationContextAware {
 
         } else {
 	        result = event(namespace:eventNamespace, topic:eventTopic, data:args, fork:false).value
+
+            if (!result) {
+                if (log.warnEnabled) {
+                    log.warn "No event handler was found for namespace ${eventNamespace} and topic ${eventTopic}, confirmation event was effectively lost"
+                }
+                result = legacyHandler(args)    
+            }   
         } 
 
 	    return result
