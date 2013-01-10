@@ -78,4 +78,27 @@ class EmailConfirmationServiceTests extends GroovyTestCase {
 		assertEquals "dummy", res.actionToTake.action
 	}
 
+    void testStaleConfirmatioXpires() {
+        def pending = new PendingEmailConfirmation(userToken: '$$$MyToken$$$', emailAddress:"bill@windows.com")
+        pending.confirmationToken = "asdasdsadasdasdasdasdas"
+        assert pending.save()
+        
+        def callbackHit = false
+        
+        def svc = new EmailConfirmationService()
+        svc.metaClass.event = { String topic, data ->
+            fail "Should never call this event variant"
+        }
+        svc.metaClass.event = { Map args ->
+            assert args.topic == 'timeout'
+            assert 'bill@windows.com' == args.data.email
+            assert '$$$MyToken$$$' == args.data.id
+            callbackHit = true
+            return [value:[controller:'test', action:'dummy']]
+        }
+        
+        svc.cullStaleConfirmations(System.currentTimeMillis())
+        
+        assert callbackHit
+    }
 }

@@ -43,7 +43,7 @@ class EmailConfirmationService implements ApplicationContextAware {
 
 	boolean transactional = true
 
-	def maxAge = 1000*60*60*24*30L // 30 days
+	def maxAge = 1000L // 1000*60*60*24*30L // 30 days
 
 	/**
 	 * This closure can be assigned by the application and must return true if the userToken is valid.
@@ -262,11 +262,11 @@ class EmailConfirmationService implements ApplicationContextAware {
 	}
 	
     @Transactional
-	void cullStaleConfirmations() {
+	void cullStaleConfirmations(long olderThan = 0) {
 		if (log.infoEnabled) {
 			log.info( "Checking for stale email confirmations...")
 		}
-		def threshold = System.currentTimeMillis() - maxAge
+		def threshold = olderThan ?: System.currentTimeMillis() - maxAge
 	    def staleConfirmationIds = PendingEmailConfirmation.withCriteria {
             projections {
                 property('id')
@@ -281,13 +281,13 @@ class EmailConfirmationService implements ApplicationContextAware {
             if (confirmation) {   
     			// Tell application
     			if (log.debugEnabled) {
-    				log.debug( "Notifying application of stale email confirmation for user token ${it.userToken}")
+    				log.debug( "Notifying application of stale email confirmation for user token ${confirmation.userToken}")
     			}
-    			fireEvent(EVENT_TYPE_TIMEOUT, it.confirmationEvent, [email:it.emailAddress, id:it.userToken], {
-        			onTimeout.clone().call( it.emailAddress, it.userToken )
+    			fireEvent(EVENT_TYPE_TIMEOUT, confirmation.confirmationEvent, [email:confirmation.emailAddress, id:confirmation.userToken], {
+        			onTimeout.clone().call( confirmation.emailAddress, confirmation.userToken )
     			})
     			
-    			it.delete()
+    			confirmation.delete()
     			c++
             }
 		}

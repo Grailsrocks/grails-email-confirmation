@@ -19,7 +19,8 @@ package com.grailsrocks.emailconfirmation
 class StaleEmailConfirmationJob {
     static triggers = {
            cron name:'emailConfirmationTrigger',
-               cronExpression:"0 0 3 * * ? *"  // Once every twenty four hours at 3am
+               cronExpression:"0 * * * * ? *"  // Once every twenty four hours at 3am
+//               cronExpression:"0 0 3 * * ? *"  // Once every twenty four hours at 3am
        }
 
     def group = "EmailConfirmationGroup"
