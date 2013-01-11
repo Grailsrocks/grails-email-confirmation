@@ -4,21 +4,69 @@ The @sendConfirmation@ method of the @emailConfirmationService@ performs the act
 
 You call this method from services or controllers to start the process of performing a confirmation.
 
-The user should receive an email containing the url to click to perform the confirmation, at which point an
+The user will receive an email containing the url to click to perform the confirmation, at which point an
 event will be received by your application indicating who confirmed and what the nature of that confirmation was.
 
 h2. Examples
 
 {code}
 // Send a simple confirmation
-emailConfirmationService.sendConfirmation(to:params.email, subject:"Please confirm!")
+emailConfirmationService.sendConfirmation(
+    to:params.email,
+    subject:"Please confirm!")
 
-// Send a simple confirmation
-emailConfirmationService.sendConfirmation(to:params.email, subject:"Please confirm!")
+// Send a confirmation with custom from: address
+emailConfirmationService.sendConfirmation(
+    from:'helpdesk@mycorp.com',
+    to:params.email,
+    subject:"Please confirm!")
 
+// Send a confirmation with custom email template
+emailConfirmationService.sendConfirmation(
+    view:'/mailtemplates/confirm_signup',
+    to:params.email,
+    subject:"Please confirm!")
+
+// Send a confirmation with custom email template and model
+emailConfirmationService.sendConfirmation(
+    model:[account:userAccount, promoCode:'NEWSIGNUP'],
+    view:'/mailtemplates/confirm_signup', 
+    to:params.email,
+    subject:"Please confirm!")
+
+// Send a confirmation with application id data
+emailConfirmationService.sendConfirmation(
+    to:params.email,
+    subject:"Please confirm!",
+    id:userAccount.ident())
+
+// Send a confirmation with custom event namespace
+emailConfirmationService.sendConfirmation(
+    to:params.email,
+    subject:"Please confirm!",
+    eventNamespace:'plugin.myPlugin')
+
+// Send a confirmation with custom event prefix and namespace
+// The event topic would be 'signup.confirmed' in the specified namespace
+emailConfirmationService.sendConfirmation(
+    to:params.email,
+    subject:"Please confirm!",
+    event:'signup',
+    eventNamespace:'plugin.myPlugin')
 {code}
 
-Events are generated when the user clicks through the link in the email successfully, or if they click on an invalid (already used or malformed) link or a link expires because it has not been used within the timeout period (default: 30 days).
+h2. Events 
+
+[Platform Core|http://grailsrocks.github.com/grails-platform-core] Events API events are generated when the user clicks through the link in the email successfully, or if they click on an invalid (already used or malformed) link or a link expires because it has not been used within the timeout period (default: 30 days).
+
+The events that can occure are:
+
+{table}
+Event Name | Description
+confirmed  | The user confirmed successfully. The event data object has "email" and "id" properties
+timeout    | The confirmation expired without being clicked. The event data object has "email" and "id" properties
+invalid    | The confirmation failed, with an unknown token. The event data object has a "token" property
+{table}
 
 h2. Method Arguments
 
@@ -34,11 +82,11 @@ Name | Description
 to | Required, email address
 id | Required, application-specific token used in callbacks when this confirmation is complete/invalid
 subject | Required, subject for the email
-event | Required, name for event callbacks, used as stem i.e. for "signupConfirmation" you'll get
-"signupConfirmation.confirmed" or "signupConfirmation.timeout" events fired
-eventNamespace | Optional, namespaces the events triggered e.g. so that your plugin receives them
+event | Optional name for event callbacks, used as stem i.e. for "signupConfirmation" you'll get
+"signupConfirmation.confirmed" or "signupConfirmation.timeout" events fired. Note that this is never used for 'invalid' events.
+eventNamespace | Optional, namespaces the events triggered e.g. so that your plugin receives them. Defaults to "plugin.emailConfirmation". Note that the "invalid" event is only ever sent to the default namespace.
 from | Optional, sender from address, defaults to config's emailConfirmation.from
 model | Optional, model to use in the email GSP view
 view | Optional, path to GSP view to use for the email body
-plugin | Optional, the "filesystem" name of the plugin
+plugin | Optional, the "filesystem" name of the plugin that contains the GSP view
 {table}
