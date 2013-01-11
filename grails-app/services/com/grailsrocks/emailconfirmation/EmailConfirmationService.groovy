@@ -194,7 +194,7 @@ class EmailConfirmationService implements ApplicationContextAware {
 	    }
     }
     
-	def fireEvent(String callbackType, String appEventPath, Map args, Closure legacyHandler) {
+	def fireEvent(String callbackType, String appEventPath, Map args, Closure legacyHandler, boolean expectsResult = true) {
 	    
         def eventNamespace
         def eventTopic
@@ -215,12 +215,12 @@ class EmailConfirmationService implements ApplicationContextAware {
 	    eventTopic = eventTopic ? "${eventTopic}.${callbackType}" : callbackType
 	    if (!eventNamespace) {
 	        // Assume its an old event - purely for legacy. 'app' namespace should not be used
-	        result = event(topic:eventTopic, namespace:'app', data:args, params:[fork:false]).value
+	        result = event(topic:eventTopic, namespace:EVENT_NAMESPACE, data:args, params:[fork:false]).value
         
-            if (!result) {
+            if (!result && expectsResult) {
     		    // Legacy only
     		    if (log.warnEnabled) {
-    		        log.warn "No event listener for namespace:'app' and topic:'$eventTopic'. Calling DEPRECATED legacy event handler, change your code to use platform events instead"
+    		        log.warn "No event listener for namespace:$EVENT_NAMESPACE and topic:'$eventTopic'. Calling DEPRECATED legacy event handler, change your code to use platform events instead"
     	        }
     	        result = legacyHandler(args)	
     	    }   
@@ -228,7 +228,7 @@ class EmailConfirmationService implements ApplicationContextAware {
         } else {
 	        result = event(namespace:eventNamespace, topic:eventTopic, data:args, fork:false).value
 
-            if (!result) {
+            if (!result && expectsResult) {
                 if (log.warnEnabled) {
                     log.warn "No event handler was found for namespace ${eventNamespace} and topic ${eventTopic} or the result was null, confirmation event was effectively lost"
                 }
@@ -297,9 +297,11 @@ class EmailConfirmationService implements ApplicationContextAware {
     			if (log.debugEnabled) {
     				log.debug( "Notifying application of stale email confirmation for user token ${confirmation.userToken}")
     			}
-    			fireEvent(EVENT_TYPE_TIMEOUT, confirmation.confirmationEvent, [email:confirmation.emailAddress, id:confirmation.userToken], {
+    			fireEvent(EVENT_TYPE_TIMEOUT, confirmation.confirmationEvent, 
+                    [email:confirmation.emailAddress, 
+                     id:confirmation.userToken], {
         			onTimeout.clone().call( confirmation.emailAddress, confirmation.userToken )
-    			})
+    			}, false)
     			
     			confirmation.delete()
     			c++
