@@ -35,6 +35,8 @@ class EmailConfirmationService implements ApplicationContextAware {
 
     static prng = new SecureRandom()
 
+    static EVENT_NAMESPACE = "plugin.emailConfirmation"
+
 	static EVENT_TYPE_CONFIRMED = 'confirmed'
 	static EVENT_TYPE_INVALID = 'invalid'
 	static EVENT_TYPE_TIMEOUT = 'timeout'
@@ -43,7 +45,7 @@ class EmailConfirmationService implements ApplicationContextAware {
 
 	boolean transactional = true
 
-	def maxAge = 1000L // 1000*60*60*24*30L // 30 days
+	def maxAge = 1000*60*60*24*30L // 30 days
 
 	/**
 	 * This closure can be assigned by the application and must return true if the userToken is valid.
@@ -61,15 +63,19 @@ class EmailConfirmationService implements ApplicationContextAware {
 	def grailsApplication
 	
 	def makeURL(token) {
-		//@todo this needs to change to do a reverse mapping lookup
-		//@todo also if uri already exists in binding, append token to it
 	    def grailsApplication = ApplicationHolder.application
 		def serverURL = grailsApplication.config.grails.serverURL ?: 'http://localhost:8080/'+grailsApplication.metadata.'app.name'
+        // @todo we should reverse-map this but currently you'd have to hack the plugin anyway so no point...
     	"${serverURL}/confirm/${token.encodeAsURL()}"
 	}
 
 	private makeConfirmationEventString(Map args) {
-        args.eventNamespace ? args.eventNamespace+'#'+args.event : args.event	    
+        def eventNamespaceAndPrefix = args.eventNamespace ?: EVENT_NAMESPACE
+        eventNamespaceAndPrefix += '#'
+        if (args.event) {
+            eventNamespaceAndPrefix += args.event
+        }
+        return eventNamespaceAndPrefix
 	}
 	
     void makeToken(confirmation)
@@ -99,7 +105,8 @@ class EmailConfirmationService implements ApplicationContextAware {
     @Transactional
 	def sendConfirmation(Map args) {
 		if (log.infoEnabled) {
-			log.info "Sending email confirmation mail to ${args.to}, callback events will be named [${args.event}.*] in namespace [${args.eventNamespace}], user data is [${args.id}])"
+			log.info "Sending email confirmation mail to ${args.to}, callback events will be prefixed with " +
+                     "[${args.event ? args.event+'.' : ''}] in namespace [${args.eventNamespace ?: EVENT_NAMESPACE}], user data is [${args.id}])"
 		}
 		def conf = new PendingEmailConfirmation(
 		    emailAddress:args.to, 
@@ -197,7 +204,7 @@ class EmailConfirmationService implements ApplicationContextAware {
         def n = appEventPath.indexOf('#')
         if (n > -1) {
             eventNamespace = appEventPath[0..n-1]
-            if (n < appEventPath.size()) {
+            if (n < appEventPath.size()-1) {
                 eventTopic = appEventPath[n+1..-1]
             }
         } else {
@@ -207,13 +214,13 @@ class EmailConfirmationService implements ApplicationContextAware {
 	    // If app-supplied callback topic, use that plus callback type, else just our declared callback types
 	    eventTopic = eventTopic ? "${eventTopic}.${callbackType}" : callbackType
 	    if (!eventNamespace) {
-	        // Assume its an app event
+	        // Assume its an old event - purely for legacy. 'app' namespace should not be used
 	        result = event(topic:eventTopic, namespace:'app', data:args, params:[fork:false]).value
         
             if (!result) {
     		    // Legacy only
     		    if (log.warnEnabled) {
-    		        log.warn "DEPRECATED Calling legacy event handler, change your code to use platform events instead"
+    		        log.warn "No event listener for namespace:'app' and topic:'$eventTopic'. Calling DEPRECATED legacy event handler, change your code to use platform events instead"
     	        }
     	        result = legacyHandler(args)	
     	    }   
@@ -223,7 +230,7 @@ class EmailConfirmationService implements ApplicationContextAware {
 
             if (!result) {
                 if (log.warnEnabled) {
-                    log.warn "No event handler was found for namespace ${eventNamespace} and topic ${eventTopic}, confirmation event was effectively lost"
+                    log.warn "No event handler was found for namespace ${eventNamespace} and topic ${eventTopic} or the result was null, confirmation event was effectively lost"
                 }
                 result = legacyHandler(args)    
             }   
