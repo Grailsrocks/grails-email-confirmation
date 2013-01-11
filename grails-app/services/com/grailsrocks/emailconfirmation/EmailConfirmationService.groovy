@@ -244,10 +244,16 @@ class EmailConfirmationService implements ApplicationContextAware {
      */
     @Transactional
 	def checkConfirmation(String confirmationToken) {
-		if (log.traceEnabled) log.trace("checkConfirmation looking for confirmation token: $confirmationToken")
-		def conf = PendingEmailConfirmation.findByConfirmationToken(confirmationToken)
-        if (conf) {
-            conf = PendingEmailConfirmation.lock(conf.ident())
+		if (log.traceEnabled) {
+            log.trace("checkConfirmation looking for confirmation token: $confirmationToken")
+        }
+
+		def conf
+        if (confirmationToken) {
+            conf = PendingEmailConfirmation.findByConfirmationToken(confirmationToken)
+            if (conf) {
+                conf = PendingEmailConfirmation.lock(conf.ident())
+            }
         }
 
 		// 100% double check that the token in the found object matches exactly. Some lame databases
