@@ -78,6 +78,25 @@ class EmailConfirmationServiceTests extends GroovyTestCase {
 		assertEquals "dummy", res.actionToTake.action
 	}
 
+    void testCheckConfirmationReturnsInvalidForEmptyToken() {
+        def callbackHit = false
+        
+        def svc = new EmailConfirmationService()
+        svc.metaClass.event = { String topic, data ->
+            fail "Should never call this event variant"
+        }
+        svc.metaClass.event = { Map args ->
+            assert args.topic == 'invalid'
+            callbackHit = true
+            return [value:[controller:'test', action:'invalid']]
+        }
+        
+        def res = svc.checkConfirmation(null)
+        
+        assert callbackHit
+        assertEquals false, res.valid
+    }
+
     void testStaleConfirmatioXpires() {
         def pending = new PendingEmailConfirmation(userToken: '$$$MyToken$$$', emailAddress:"bill@windows.com")
         pending.confirmationToken = "asdasdsadasdasdasdasdas"
