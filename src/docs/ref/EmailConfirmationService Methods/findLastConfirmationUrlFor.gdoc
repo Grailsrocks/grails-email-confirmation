@@ -1,0 +1,31 @@
+h1. findLastConfirmationUrlFor
+
+This method is primarily for use in test code to obtain the last confirmation URL for a given user.
+
+You can optionally pass in id, event and/or eventNamespace to match the confirmation based on those as well.
+
+The return value is the URL string or null.
+
+h2. Examples
+
+{code}
+// Just find the last confirmation URL for Larry
+def u = emailConfirmationService.findLastConfirmationUrlFor('larryellison@oracle.com')
+
+// Just find the last confirmation URL for Larry, where id was X
+u = emailConfirmationService.findLastConfirmationUrlFor('larryellison@oracle.com', [id:'X'])
+
+// Just find the last confirmation URL for Larry, where id was X
+u = emailConfirmationService.findLastConfirmationUrlFor('larryellison@oracle.com', [event:'signup', eventNamespace:'plugin.mySecurity'])
+{code}
+
+h2. Method Arguments
+
+{table}
+Name  | Description
+email | Email address of the user
+args  | Map of arguments. If specified, id, event and eventNamespace will be used to match the confirmation
+against.
+{table}
+
+

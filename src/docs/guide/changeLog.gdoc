@@ -1,1 +1,9 @@
-2.0.7
+h1. Change log
+
+h2. 2.0.7
+
+* BREAKING CHANGE: the default event namespace has changed from 'app' to 'plugin.emailConfirmation'. Sorry but this had to happen. Update all your @Listener to the new namespace.
+* IMPORTANT: There is no database migration included, but you need to change the PendingEmailConfirmation.confirmationToken column to "unique" in your database.
+* Fix for concurrent DB issues in Quartz Job
+* Fix for confirmation tokens being non-unique
+* Fix for bad dev controller name
