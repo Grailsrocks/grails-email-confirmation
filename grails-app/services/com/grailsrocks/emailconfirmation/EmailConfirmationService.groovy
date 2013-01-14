@@ -167,8 +167,11 @@ class EmailConfirmationService implements ApplicationContextAware {
 	} 
 
     /**
-     * Find the last confirmation URL sent to a given address, useful for tests that 
+     * Find the most recent confirmation URL sent to a given address, useful for tests that 
      * don't want to receive emails and parse them in order to provide a confirmation
+     * @param email The email address of the user
+     * @param args The optional arguments for the confirmation to find, including e.g. id, event and eventNamespace
+     * as used when sending the event. If not specified these values will not be checked
      */
     @Transactional
     def findLastConfirmationUrlFor(String email, Map args) {
