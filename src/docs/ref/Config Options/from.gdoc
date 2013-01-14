@@ -1,0 +1,15 @@
+h1. from
+
+This plugin configuration value is declared using Platform Core configuration conventions.
+
+The value is used as the default @From:@ address on confirmation e-mails is no @from@ argument is specified
+when calling the [sendConfirmation|emailConfirmationServiceMethods] method.
+
+h2. Example
+
+Here is how you would configure this in Config.groovy:
+
+{docx}
+plugin.emailConfirmation.from = '"Do not reply" <noreply@mymegacorp.com>'
+{docx}
+

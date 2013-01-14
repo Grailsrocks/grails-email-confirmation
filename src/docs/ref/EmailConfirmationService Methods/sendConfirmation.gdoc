@@ -9,7 +9,7 @@ event will be received by your application indicating who confirmed and what the
 
 h2. Examples
 
-{code}
+{docx}
 // Send a simple confirmation
 emailConfirmationService.sendConfirmation(
     to:params.email,
@@ -53,7 +53,7 @@ emailConfirmationService.sendConfirmation(
     subject:"Please confirm!",
     event:'signup',
     eventNamespace:'plugin.myPlugin')
-{code}
+{docx}
 
 h2. Events 
 

@@ -8,7 +8,7 @@ The return value is the URL string or null.
 
 h2. Examples
 
-{code}
+{docx}
 // Just find the last confirmation URL for Larry
 def u = emailConfirmationService.findLastConfirmationUrlFor('larryellison@oracle.com')
 
@@ -17,7 +17,7 @@ u = emailConfirmationService.findLastConfirmationUrlFor('larryellison@oracle.com
 
 // Just find the last confirmation URL for Larry, where id was X
 u = emailConfirmationService.findLastConfirmationUrlFor('larryellison@oracle.com', [event:'signup', eventNamespace:'plugin.mySecurity'])
-{code}
+{docx}
 
 h2. Method Arguments
 

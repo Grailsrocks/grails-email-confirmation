@@ -7,3 +7,7 @@ h2. 2.0.7
 * Fix for concurrent DB issues in Quartz Job
 * Fix for confirmation tokens being non-unique
 * Fix for bad dev controller name
+
+h2. 2.0
+
+* BREAKING CHANGE: the "from" Config property is now in the @plugin.emailConfirmation@ scope, using Platform Core conventions.
