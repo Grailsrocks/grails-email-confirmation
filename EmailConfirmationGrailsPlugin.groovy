@@ -37,7 +37,7 @@ Send emails to users to perform click-through confirmations of any kind.
 '''
 
         // URL to the plugin's documentation
-    def documentation = "http://grails.org/plugin/email-confirmation"
+    def documentation = "http://grailsrocks.github.com/grails-email-confirmation"
 	
     // Extra (optional) plugin metadata
 
