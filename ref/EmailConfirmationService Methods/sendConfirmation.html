@@ -1,0 +1,118 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+    <title>Email Confirmation 2.0.7</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <link rel="stylesheet" href="../../css/main.css" type="text/css" media="screen, print" title="Style" charset="utf-8"/>
+    <link rel="stylesheet" href="../../css/pdf.css" type="text/css" media="print" title="PDF" charset="utf-8"/>
+    <script type="text/javascript" src="../../css/shCore.js"></script>
+    <script type="text/javascript" src="../../css/shBrushGroovy.js"></script>
+    <script type="text/javascript" src="../../css/shBrushXml.js"></script>
+    <link type="text/css" rel="stylesheet" href="../../css/shCoreMidnight.css"/>
+    <script type="text/javascript">
+        SyntaxHighlighter.config.stripBrs = true;
+        SyntaxHighlighter.defaults['smart-tabs'] = true;
+        SyntaxHighlighter.all();
+        function addJsClass() {
+            var classes = document.body.className.split(" ");
+            classes.push("js");
+            document.body.className = classes.join(" ");
+        }
+    </script>
+</head>
+
+<body class="body" onload="addJsClass();">
+
+<div id="navigation">
+    <ul>
+        <li>
+            <div id="nav-summary" onmouseover="toggleNavSummary(false)" onmouseout="toggleNavSummary(true)">
+                <a href="../../guide/index.html" class="button">Table of contents</a>
+
+                <div id="nav-summary-childs">
+                    
+                    <div class="toc-item" style="margin-left:0"><a href="../../guide/overview.html"><strong>1</strong><span>Overview</span></a>
+                    </div>
+                    
+                    <div class="toc-item" style="margin-left:0"><a href="../../guide/changelog.html"><strong>2</strong><span>Change history</span></a>
+                    </div>
+                    
+                </div>
+            </div>
+        </li>
+        <li class="separator selected">
+            <a id="ref-button" onclick="localToggle(); return false;" href="#">Quick Reference</a>
+        </li>
+    </ul>
+</div>
+<div id="header">
+    <div class="images clearfix">
+        
+        
+    </div>
+    <p>Sends and verifies confirmation emails</p>
+</div>
+
+
+<table id="colset" border="0" cellpadding="0" cellspacing="0">
+    <tr>
+        <td id="col1">
+            <div id="main" class="reference corner-all">
+
+                <span id='toggle-col1' class="toggle">(<a href="#" onclick="localToggle(); return false;">Quick Reference</a>)</span>
+
+                <h1>sendConfirmation</h1><p class="paragraph"/>The <code>sendConfirmation</code> method of the <code>emailConfirmationService</code> performs the act of generating, storing and emailing a confirmation and its related data.<p class="paragraph"/>You call this method from services or controllers to start the process of performing a confirmation.<p class="paragraph"/>The user will receive an email containing the url to click to perform the confirmation, at which point an
+event will be received by your application indicating who confirmed and what the nature of that confirmation was.<p class="paragraph"/><h2>Examples</h2><p class="paragraph"/><pre class="brush: groovy;">&#10;// Send a simple confirmation&#10;emailConfirmationService.sendConfirmation(&#10;    to:params.email,&#10;    subject:"Please confirm!")&#10;&#10;// Send a confirmation with custom from: address&#10;emailConfirmationService.sendConfirmation(&#10;    from:'helpdesk&#64;mycorp.com',&#10;    to:params.email,&#10;    subject:"Please confirm!")&#10;&#10;// Send a confirmation with custom email template&#10;emailConfirmationService.sendConfirmation(&#10;    view:'/mailtemplates/confirm_signup',&#10;    to:params.email,&#10;    subject:"Please confirm!")&#10;&#10;// Send a confirmation with custom email template and model&#10;emailConfirmationService.sendConfirmation(&#10;    model:&#91;account:userAccount, promoCode:'NEWSIGNUP'&#93;,&#10;    view:'/mailtemplates/confirm_signup', &#10;    to:params.email,&#10;    subject:"Please confirm!")&#10;&#10;// Send a confirmation with application id data&#10;emailConfirmationService.sendConfirmation(&#10;    to:params.email,&#10;    subject:"Please confirm!",&#10;    id:userAccount.ident())&#10;&#10;// Send a confirmation with custom event namespace&#10;emailConfirmationService.sendConfirmation(&#10;    to:params.email,&#10;    subject:"Please confirm!",&#10;    eventNamespace:'plugin.myPlugin')&#10;&#10;// Send a confirmation with custom event prefix and namespace&#10;// The event topic would be 'signup.confirmed' in the specified namespace&#10;emailConfirmationService.sendConfirmation(&#10;    to:params.email,&#10;    subject:"Please confirm!",&#10;    event:'signup',&#10;    eventNamespace:'plugin.myPlugin')&#10;</pre><p class="paragraph"/><h2>Events </h2><p class="paragraph"/><a href="http://grailsrocks.github.com/grails-platform-core" target="blank">Platform Core</a> Events API events are generated when the user clicks through the link in the email successfully, or if they click on an invalid (already used or malformed) link or a link expires because it has not been used within the timeout period (default: 30 days).<p class="paragraph"/>The events that can occure are:<p class="paragraph"/><table class="wiki-table" cellpadding="0" cellspacing="0" border="0"><tr><th>Event Name</th><th>Description</th></tr><tr class="table-odd"><td>confirmed</td><td>The user confirmed successfully. The event data object has "email" and "id" properties</td></tr><tr class="table-even"><td>timeout</td><td>The confirmation expired without being clicked. The event data object has "email" and "id" properties</td></tr><tr class="table-odd"><td>invalid</td><td>The confirmation failed, with an unknown token. The event data object has a "token" property</td></tr></table><p class="paragraph"/><h2>Method Arguments</h2><p class="paragraph"/><table class="wiki-table" cellpadding="0" cellspacing="0" border="0"><tr><th>Name</th><th>Description</th></tr><tr class="table-odd"><td>args</td><td>Map of arguments</td></tr></table><p class="paragraph"/><h2>Supported Map arguments</h2><p class="paragraph"/><table class="wiki-table" cellpadding="0" cellspacing="0" border="0"><tr><th>Name</th><th>Description</th></tr><tr class="table-odd"><td>to</td><td>Required, email address</td></tr><tr class="table-even"><td>id</td><td>Required, application-specific token used in callbacks when this confirmation is complete/invalid</td></tr><tr class="table-odd"><td>subject</td><td>Required, subject for the email</td></tr><tr class="table-even"><td>event</td><td>Optional name for event callbacks, used as stem i.e. for "signupConfirmation" you'll get</td></tr><tr class="table-odd"><td>"signupConfirmation.confirmed" or "signupConfirmation.timeout" events fired. Note that this is never used for 'invalid' events.</td></tr><tr class="table-even"><td>eventNamespace</td><td>Optional, namespaces the events triggered e.g. so that your plugin receives them. Defaults to "plugin.emailConfirmation". Note that the "invalid" event is only ever sent to the default namespace.</td></tr><tr class="table-odd"><td>from</td><td>Optional, sender from address, defaults to config's emailConfirmation.from</td></tr><tr class="table-even"><td>model</td><td>Optional, model to use in the email GSP view</td></tr><tr class="table-odd"><td>view</td><td>Optional, path to GSP view to use for the email body</td></tr><tr class="table-even"><td>plugin</td><td>Optional, the "filesystem" name of the plugin that contains the GSP view</td></tr></table>
+
+            </div>
+        </td>
+        <td id="col2">
+            <div class="local clearfix">
+                <div class="local-title">
+                    <a href="../../guide/index.html" target="mainFrame">Quick Reference</a>
+                    <span class="toggle">(<a href="#" onclick="localToggle(); return false;">hide</a>)</span>
+                </div>
+                <div class="menu">
+                    
+                    <div class="menu-block">
+                        <h1 class="menu-title" onclick="toggleRef(nextElement(this))">Config Options</h1>
+                        <div class="menu-sub">
+                            
+                            
+                            <div class="menu-item"><a href="../../ref/Config%20Options/from.html">from</a>
+                            </div>
+                            
+                        </div>
+                    </div>
+                    
+                    <div class="menu-block">
+                        <h1 class="menu-title" onclick="toggleRef(nextElement(this))">EmailConfirmationService Methods</h1>
+                        <div class="menu-sub selected">
+                            
+                            
+                            <div class="menu-item"><a href="../../ref/EmailConfirmationService%20Methods/findLastConfirmationUrlFor.html">findLastConfirmationUrlFor</a>
+                            </div>
+                            
+                            <div class="menu-item"><a href="../../ref/EmailConfirmationService%20Methods/sendConfirmation.html">sendConfirmation</a>
+                            </div>
+                            
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+        </td>
+    </tr>
+</table>
+
+<div id="footer">
+    &copy; 2012 Marc Palmer
+    Please contact the author with any corrections or suggestions
+</div>
+
+
+<script type="text/javascript" src="../../js/docs.js"></script>
+
+</body>
+</html>
