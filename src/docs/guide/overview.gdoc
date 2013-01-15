@@ -11,8 +11,8 @@ The sending of mail is performed using the Grails Mail plugin so you must have t
 
 h2. The User Guide ends there!
 
-This plugin is free open source. There is some great guide
-documentation takes the form of a low-priced commercial e-book [The Email Confirmation Plugin|http://grck.it/email-confirmation-book] available from $2.99.
+There is some great guide
+documentation that takes the form of a very low-priced commercial e-book [The Email Confirmation Plugin|http://grck.it/email-confirmation-book] available from $2.99.
 
 Basic reference documentation is included here in the panel on the right, but you will find the e-book an invaluable guide to getting going and making the most of the plugin.
 
