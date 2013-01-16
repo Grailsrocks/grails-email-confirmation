@@ -1,9 +1,9 @@
 grails.doc.title = "Email Confirmation"
-grails.doc.subtitle = "Sends and verifies confirmation emails"
+grails.doc.subtitle = "Email Confirmation - for sending and verifying confirmation emails"
 grails.doc.images = new File("resources/img")
 grails.doc.authors = "Marc Palmer (marc@grailsrocks.com)"
 grails.doc.license = "ASL 2"
-grails.doc.copyright = "&copy; 2012 Marc Palmer"
+grails.doc.copyright = "&copy; 2013 Marc Palmer"
 grails.doc.footer = "Please contact the author with any corrections or suggestions"
 grails.views.default.codec="none" // none, html, base64
 grails.views.gsp.encoding="UTF-8"
