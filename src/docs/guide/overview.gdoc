@@ -9,12 +9,15 @@ instead of the nasty callback mechanism of 1.x, and sending of mail has been abs
 
 The sending of mail is performed using the Grails Mail plugin so you must have that configured appropriately.
 
+To send a confirmation you call the [sendConfirmation|emailConfirmationServiceMethods] method, and listen for Platform Core events as described in the reference section for that method.
+
 h2. The User Guide ends there!
 
 There is some great guide
-documentation that takes the form of a very low-priced commercial e-book [The Email Confirmation Plugin|http://grck.it/email-confirmation-book] available from $2.99.
+documentation that takes the form of a very low-priced commercial e-book called [The Email Confirmation Plugin|http://grck.it/email-confirmation-book] available DRM-free with free updates.
 
-Basic reference documentation is included here in the panel on the right, but you will find the e-book an invaluable guide to getting going and making the most of the plugin.
+Basic reference documentation is included here in the panel on the right, but you will find the e-book an invaluable
+guide to getting going, understanding many of the user experience considerations around confirmations, and making the most of the plugin.
 
 I greatly appreciate your support.
 

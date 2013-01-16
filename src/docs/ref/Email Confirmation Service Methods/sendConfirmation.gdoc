@@ -2,7 +2,8 @@ h1. sendConfirmation
 
 The @sendConfirmation@ method of the @emailConfirmationService@ performs the act of generating, storing and emailing a confirmation and its related data.
 
-You call this method from services or controllers to start the process of performing a confirmation.
+You call this method from services or controllers to start the process of performing a confirmation. You register listeners for
+the events that are fired using Platform Core Events API and the @Listener annotation (see example code below).
 
 The user will receive an email containing the url to click to perform the confirmation, at which point an
 event will be received by your application indicating who confirmed and what the nature of that confirmation was.
@@ -55,18 +56,63 @@ emailConfirmationService.sendConfirmation(
     eventNamespace:'plugin.myPlugin')
 {docx}
 
+Once a confirmation has been sent like this, you use the Events to receive updates when people confirm or fail to confirm.
+
 h2. Events 
 
 [Platform Core|http://grailsrocks.github.com/grails-platform-core] Events API events are generated when the user clicks through the link in the email successfully, or if they click on an invalid (already used or malformed) link or a link expires because it has not been used within the timeout period (default: 30 days).
 
-The events that can occure are:
+The events that can occur are:
 
 {table}
 Event Name | Description
-confirmed  | The user confirmed successfully. The event data object has "email" and "id" properties
-timeout    | The confirmation expired without being clicked. The event data object has "email" and "id" properties
-invalid    | The confirmation failed, with an unknown token. The event data object has a "token" property
+confirmed  | The user confirmed successfully. The event data object has "email" and "id" properties. The return value must be a Map of @redirect@ arguments, pointing to a destination the user should be redirected to.
+timeout    | The confirmation expired without being clicked. The event data object has "email" and "id" properties. The return value is not used.
+invalid    | The confirmation failed, with an unknown token. The event data object has a "token" property. The return value must be a Map of @redirect@ arguments, pointing to a destination the user should be redirected to.
 {table}
+
+Here are some examples of listening for these events:
+
+{docx}
+import grails.event.Listener
+
+class MyService {
+
+    // Standard confirmed event and namespace
+    @Listener(topic:'confirmed', namespace:'plugin.emailConfirmation') 
+    def userConfirmed(info) {
+        log.info "User ${info.email} successfully confirmed with application id data ${info.id}"
+        return [controller:'userProfile', action:'welcomeNewUser']
+    }
+
+    // Standard timeout event and namespace
+    @Listener(topic:'timeout', namespace:'plugin.emailConfirmation') 
+    def userConfirmationTimedOut(info) {
+        log.info "A user failed to confirm, the token in their link was ${info.token}"
+    }
+
+    // Standard timeout event and namespace
+    @Listener(topic:'invalid', namespace:'plugin.emailConfirmation') 
+    def userConfirmationWasInvalid(info) {
+        log.info "User ${info.email} failed to confirm for application id data ${info.id}"
+        return [controller:'userProfile', action:'invalidConfirmationHelp']
+    }
+
+    // Custom confirmed event prefix and namespace set to 'app' when requesting confirmation
+    @Listener(topic:'registration.confirmed') 
+    def registrationConfirmed(info) {
+        log.info "User ${info.email} successfully confirmed with application id data ${info.id}"
+        return [controller:'userProfile', action:'welcomeNewUser']
+    }
+
+    // Custom confirmed event prefix and using a custom plugin namespace
+    @Listener(topic:'changePassword.confirmed', namespace:'plugin.mySecurity') 
+    def changePasswordConfirmed(info) {
+        log.info "User ${info.email} successfully confirmed with application id data ${info.id}"
+        return [controller:'security', action:'doChangePassword']
+    }
+}
+{docx}
 
 h2. Method Arguments
 
@@ -82,8 +128,7 @@ Name | Description
 to | Required, email address
 id | Required, application-specific token used in callbacks when this confirmation is complete/invalid
 subject | Required, subject for the email
-event | Optional name for event callbacks, used as stem i.e. for "signupConfirmation" you'll get
-"signupConfirmation.confirmed" or "signupConfirmation.timeout" events fired. Note that this is never used for 'invalid' events.
+event | Optional name for event callbacks, used as stem i.e. for "signupConfirmation" you'll get "signupConfirmation.confirmed" or "signupConfirmation.timeout" events fired. Note that this is never used for 'invalid' events.
 eventNamespace | Optional, namespaces the events triggered e.g. so that your plugin receives them. Defaults to "plugin.emailConfirmation". Note that the "invalid" event is only ever sent to the default namespace.
 from | Optional, sender from address, defaults to config's emailConfirmation.from
 model | Optional, model to use in the email GSP view
