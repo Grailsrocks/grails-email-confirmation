@@ -62,8 +62,8 @@
 
                 <span id='toggle-col1' class="toggle">(<a href="#" onclick="localToggle(); return false;">Quick Reference</a>)</span>
 
-                <h1>from</h1><p class="paragraph"/>This plugin configuration value is declared using Platform Core configuration conventions.<p class="paragraph"/>The value is used as the default <code>From:</code> address on confirmation e-mails is no <code>from</code> argument is specified
-when calling the <a href="../../ref/Email Confirmation Service Methods/sendConfirmation.html" class="emailConfirmationServiceMethods">sendConfirmation</a> method.<p class="paragraph"/><h2>Example</h2><p class="paragraph"/>Here is how you would configure this in Config.groovy:<p class="paragraph"/><pre class="brush: groovy;">&#10;plugin.emailConfirmation.from = '"Do not reply" &#60;noreply&#64;mymegacorp.com&#62;'&#10;</pre><p class="paragraph"/>
+                <h1>findLastConfirmationUrlFor</h1><p class="paragraph"/>This method is primarily for use in test code to obtain the last confirmation URL for a given user.<p class="paragraph"/>You can optionally pass in id, event and/or eventNamespace to match the confirmation based on those as well.<p class="paragraph"/>The return value is the URL string or null.<p class="paragraph"/><h2>Examples</h2><p class="paragraph"/><pre class="brush: groovy;">&#10;// Just find the last confirmation URL for Larry&#10;def u = emailConfirmationService.findLastConfirmationUrlFor('larryellison&#64;oracle.com')&#10;&#10;// Just find the last confirmation URL for Larry, where id was X&#10;u = emailConfirmationService.findLastConfirmationUrlFor('larryellison&#64;oracle.com', &#91;id:'X'&#93;)&#10;&#10;// Just find the last confirmation URL for Larry, where id was X&#10;u = emailConfirmationService.findLastConfirmationUrlFor('larryellison&#64;oracle.com', &#91;event:'signup', eventNamespace:'plugin.mySecurity'&#93;)&#10;</pre><p class="paragraph"/><h2>Method Arguments</h2><p class="paragraph"/><table class="wiki-table" cellpadding="0" cellspacing="0" border="0"><tr><th>Name</th><th>Description</th></tr><tr class="table-odd"><td>email</td><td>Email address of the user</td></tr><tr class="table-even"><td>args</td><td>Map of arguments. If specified, id, event and eventNamespace will be used to match the confirmation</td></tr><tr class="table-odd"><td>against.</td></tr></table><p class="paragraph"/>
+
             </div>
         </td>
         <td id="col2">
@@ -76,7 +76,7 @@ when calling the <a href="../../ref/Email Confirmation Service Methods/sendConfi
                     
                     <div class="menu-block">
                         <h1 class="menu-title" onclick="toggleRef(nextElement(this))">Config Options</h1>
-                        <div class="menu-sub selected">
+                        <div class="menu-sub">
                             
                             
                             <div class="menu-item"><a href="../../ref/Config%20Options/from.html">from</a>
@@ -87,7 +87,7 @@ when calling the <a href="../../ref/Email Confirmation Service Methods/sendConfi
                     
                     <div class="menu-block">
                         <h1 class="menu-title" onclick="toggleRef(nextElement(this))">Email Confirmation Service Methods</h1>
-                        <div class="menu-sub">
+                        <div class="menu-sub selected">
                             
                             
                             <div class="menu-item"><a href="../../ref/Email%20Confirmation%20Service%20Methods/findLastConfirmationUrlFor.html">findLastConfirmationUrlFor</a>

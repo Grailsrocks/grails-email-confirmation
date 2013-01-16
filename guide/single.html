@@ -2,7 +2,7 @@
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
-    <title>Email Confirmation 2.0.7</title>
+    <title>Email Confirmation 2.0.8</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <link rel="stylesheet" href="../css/main.css" type="text/css" media="screen, print" title="Style" charset="utf-8" />
     <link rel="stylesheet" href="../css/pdf.css" type="text/css" media="print" title="PDF" charset="utf-8" />
@@ -47,7 +47,7 @@
         
         
     </div>
-    <p>Sends and verifies confirmation emails</p>
+    <p>Email Confirmation - for sending and verifying confirmation emails</p>
 </div>
 
 
@@ -61,7 +61,7 @@
                 <div class="project">
                     <h1>Email Confirmation - Reference Documentation</h1>
                     <p><strong>Authors:</strong> Marc Palmer (marc@grailsrocks.com)</p>
-                    <p><strong>Version:</strong> 2.0.7</p>
+                    <p><strong>Version:</strong> 2.0.8</p>
                     
                 </div>
 
@@ -82,8 +82,9 @@
 The Email Confirmation plugin allows you to send any number of confirmation emails to users, for any purpose you like.<p class="paragraph"/>A confirmation email contains the text you wish to send, and a link back to the plugin.
 If the user clicks the link your application will receive a callback event and can then redirect the user to 
 the appropriate page after noting the confirmation occurred.<p class="paragraph"/>Version 2.0 and higher have been re-worked to leverage the events mechanisms in <a href="http://grailsrocks.github.com/grails-platform-core" target="blank">Platform Core</a>
-instead of the nasty callback mechanism of 1.x, and sending of mail has been abstracted so that you can push mail to e.g. a queue instead.<p class="paragraph"/>The sending of mail is performed using the Grails Mail plugin so you must have that configured appropriately.<p class="paragraph"/><h2>The User Guide ends there!</h2><p class="paragraph"/>There is some great guide
-documentation that takes the form of a very low-priced commercial e-book <a href="http://grck.it/email-confirmation-book" target="blank">The Email Confirmation Plugin</a> available from $2.99.<p class="paragraph"/>Basic reference documentation is included here in the panel on the right, but you will find the e-book an invaluable guide to getting going and making the most of the plugin.<p class="paragraph"/>I greatly appreciate your support.<p class="paragraph"/>
+instead of the nasty callback mechanism of 1.x, and sending of mail has been abstracted so that you can push mail to e.g. a queue instead.<p class="paragraph"/>The sending of mail is performed using the Grails Mail plugin so you must have that configured appropriately.<p class="paragraph"/>To send a confirmation you call the <a href="../ref/Email Confirmation Service Methods/sendConfirmation.html" class="emailConfirmationServiceMethods">sendConfirmation</a> method, and listen for Platform Core events as described in the reference section for that method.<p class="paragraph"/><h2>The User Guide ends there!</h2><p class="paragraph"/>There is some great guide
+documentation that takes the form of a very low-priced commercial e-book called <a href="http://grck.it/email-confirmation-book" target="blank">The Email Confirmation Plugin</a> available DRM-free with free updates.<p class="paragraph"/>Basic reference documentation is included here in the panel on the right, but you will find the e-book an invaluable
+guide to getting going, understanding many of the user experience considerations around confirmations, and making the most of the plugin.<p class="paragraph"/>I greatly appreciate your support.<p class="paragraph"/>
 
 
 <h1 id="changelog">2 Change history</h1>
@@ -118,13 +119,13 @@ documentation that takes the form of a very low-priced commercial e-book <a href
                     </div>
                     </div>
                     
-                    <div class="menu-block"><h1 class="menu-title" onclick="toggleRef(this.parentNode.childNodes[1])">EmailConfirmationService Methods</h1><div class="menu-sub">
+                    <div class="menu-block"><h1 class="menu-title" onclick="toggleRef(this.parentNode.childNodes[1])">Email Confirmation Service Methods</h1><div class="menu-sub">
                         
                         
-                        <div class="menu-item"><a href="../ref/EmailConfirmationService%20Methods/findLastConfirmationUrlFor.html">findLastConfirmationUrlFor</a>
+                        <div class="menu-item"><a href="../ref/Email%20Confirmation%20Service%20Methods/findLastConfirmationUrlFor.html">findLastConfirmationUrlFor</a>
                         </div>
                         
-                        <div class="menu-item"><a href="../ref/EmailConfirmationService%20Methods/sendConfirmation.html">sendConfirmation</a>
+                        <div class="menu-item"><a href="../ref/Email%20Confirmation%20Service%20Methods/sendConfirmation.html">sendConfirmation</a>
                         </div>
                         
                     </div>
@@ -137,7 +138,7 @@ documentation that takes the form of a very low-priced commercial e-book <a href
 </table>
 
 <div id="footer">
-    &copy; 2012 Marc Palmer
+    &copy; 2013 Marc Palmer
     Please contact the author with any corrections or suggestions
 </div>
 
