@@ -17,7 +17,7 @@ package com.grailsrocks.emailconfirmation
 
 import grails.util.GrailsUtil
 
-class TestToolsController {
+class EmailConfirmationTestToolsController {
 
 	def emailConfirmationService
 	
