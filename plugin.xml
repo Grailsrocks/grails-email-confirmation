@@ -1,0 +1,36 @@
+<plugin name='email-confirmation' version='2.0.6-WITH-CHANGES' grailsVersion='1.3 &gt; *'>
+  <author>Marc Palmer</author>
+  <authorEmail>marc@grailsrocks.com</authorEmail>
+  <title>Email Confirmation</title>
+  <description>\
+Send emails to users to perform click-through confirmations of any kind.
+</description>
+  <documentation>http://grails.org/plugin/email-confirmation</documentation>
+  <type>EmailConfirmationGrailsPlugin</type>
+  <resources>
+    <resource>EmailConfirmationEvents</resource>
+    <resource>EmailConfirmationUrlMappings</resource>
+    <resource>com.grailsrocks.emailconfirmation.EmailConfirmationController</resource>
+    <resource>com.grailsrocks.emailconfirmation.EmailConfirmationTestToolsController</resource>
+    <resource>com.grailsrocks.emailconfirmation.PendingEmailConfirmation</resource>
+    <resource>com.grailsrocks.emailconfirmation.StaleEmailConfirmationJob</resource>
+    <resource>com.grailsrocks.emailconfirmation.EmailConfirmationService</resource>
+    <resource>com.grailsrocks.emailconfirmation.Base62Codec</resource>
+  </resources>
+  <repositories>
+    <repository name='grailsCentral' url='http://grails.org/plugins' />
+    <repository name='mavenCentral' url='http://repo1.maven.org/maven2/' />
+    <repository name='http://grails.org/plugins' url='http://grails.org/plugins' />
+    <repository name='http://download.java.net/maven/2/' url='http://download.java.net/maven/2/' />
+  </repositories>
+  <dependencies />
+  <plugins>
+    <compile>
+      <plugin group='org.grails.plugins' name='mail' version='1.0' />
+      <plugin group='org.grails.plugins' name='quartz' version='1.0-RC2' />
+      <plugin group='org.grails.plugins' name='platform-core' version='1.0.M7-SNAPSHOT' />
+    </compile>
+  </plugins>
+  <runtimePluginRequirements />
+  <behavior />
+</plugin>
