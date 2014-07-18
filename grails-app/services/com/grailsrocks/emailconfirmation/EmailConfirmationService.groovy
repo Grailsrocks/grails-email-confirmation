@@ -15,21 +15,15 @@
  */
 package com.grailsrocks.emailconfirmation
  
-import java.util.concurrent.ConcurrentHashMap
-
-import org.springframework.transaction.annotation.Transactional
-import org.springframework.web.context.request.RequestContextHolder
-import org.springframework.context.ApplicationContextAware
-import org.springframework.context.ApplicationContext
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
-import org.codehaus.groovy.grails.commons.ApplicationHolder
-
-import com.grailsrocks.emailconfirmation.*
-
 import grails.util.Environment
+import grails.util.Holders
 
 import java.rmi.server.UID
 import java.security.*
+
+import org.springframework.context.ApplicationContext
+import org.springframework.context.ApplicationContextAware
+import org.springframework.transaction.annotation.Transactional
 
 class EmailConfirmationService implements ApplicationContextAware {
 
@@ -63,7 +57,7 @@ class EmailConfirmationService implements ApplicationContextAware {
 	def grailsApplication
 	
 	def makeURL(token) {
-	    def grailsApplication = ApplicationHolder.application
+	    def grailsApplication = Holders.getGrailsApplication() 
 		def serverURL = grailsApplication.config.grails.serverURL ?: 'http://localhost:8080/'+grailsApplication.metadata.'app.name'
         // @todo we should reverse-map this but currently you'd have to hack the plugin anyway so no point...
     	"${serverURL}/confirm/${token.encodeAsURL()}"
