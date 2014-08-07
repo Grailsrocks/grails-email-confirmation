@@ -13,50 +13,48 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 import org.springframework.context.support.GenericApplicationContext
-import groovy.mock.interceptor.MockFor
-import org.springframework.core.io.ByteArrayResource
 
 import com.grailsrocks.emailconfirmation.*
 
 class EmailConfirmationServiceTests extends GroovyTestCase {
 
 	void testSendConfirmation() {
-		
+
 		def confirmer = new EmailConfirmationService()
-		
+
 		def sendMailCalled = false
-		
+
 		confirmer.mailService = new Expando()
 		confirmer.mailService.sendMail = { closure ->
 			sendMailCalled = true
 		}
-		
+
 		def conf
 		confirmer.applicationContext = new GenericApplicationContext()
-		conf = confirmer.sendConfirmation( "marc@anyware.co.uk", 
-			"testing", 
+		conf = confirmer.sendConfirmation( "marc@anyware.co.uk",
+			"testing",
 			[message:"hello", fromAddress:'tester@universe'],
 			"@@@token@@@")
-		
+
 		println "conf token: ${conf.confirmationToken}"
-		
+
 		assertFalse "?" == conf.confirmationToken
-		
+
 		assert sendMailCalled
 		assertEquals '@@@token@@@', conf.userToken
 		assertNotNull conf.confirmationToken
 	}
 
-		
+
 	void testCheckConfirmation() {
 		def pending = new PendingEmailConfirmation(userToken: '$$$MyToken$$$', emailAddress:"bill@windows.com")
         pending.confirmationToken = "asdasdsadasdasdasdasdas"
         assert pending.save()
-		
+
 		def callbackHit = false
-		
+
 		def svc = new EmailConfirmationService()
 		svc.metaClass.event = { String topic, data ->
 		    fail "Should never call this event variant"
@@ -68,9 +66,9 @@ class EmailConfirmationServiceTests extends GroovyTestCase {
 			callbackHit = true
 			return [value:[controller:'test', action:'dummy']]
 		}
-		
+
 		def res = svc.checkConfirmation(pending.confirmationToken)
-		
+
 		assert callbackHit
 		assertEquals true, res.valid
 		assertEquals "bill@windows.com", res.email
@@ -80,7 +78,7 @@ class EmailConfirmationServiceTests extends GroovyTestCase {
 
     void testCheckConfirmationReturnsInvalidForEmptyToken() {
         def callbackHit = false
-        
+
         def svc = new EmailConfirmationService()
         svc.metaClass.event = { String topic, data ->
             fail "Should never call this event variant"
@@ -90,9 +88,9 @@ class EmailConfirmationServiceTests extends GroovyTestCase {
             callbackHit = true
             return [value:[controller:'test', action:'invalid']]
         }
-        
+
         def res = svc.checkConfirmation(null)
-        
+
         assert callbackHit
         assertEquals false, res.valid
     }
@@ -101,9 +99,9 @@ class EmailConfirmationServiceTests extends GroovyTestCase {
         def pending = new PendingEmailConfirmation(userToken: '$$$MyToken$$$', emailAddress:"bill@windows.com")
         pending.confirmationToken = "asdasdsadasdasdasdasdas"
         assert pending.save()
-        
+
         def callbackHit = false
-        
+
         def svc = new EmailConfirmationService()
         svc.metaClass.event = { String topic, data ->
             fail "Should never call this event variant"
@@ -115,9 +113,9 @@ class EmailConfirmationServiceTests extends GroovyTestCase {
             callbackHit = true
             return [value:[controller:'test', action:'dummy']]
         }
-        
+
         svc.cullStaleConfirmations(System.currentTimeMillis())
-        
+
         assert callbackHit
     }
 }

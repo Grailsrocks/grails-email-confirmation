@@ -14,19 +14,13 @@
  * limitations under the License.
  */
 package com.grailsrocks.emailconfirmation
- 
-import java.util.concurrent.ConcurrentHashMap
 
 import org.springframework.transaction.annotation.Transactional
-import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.context.ApplicationContextAware
 import org.springframework.context.ApplicationContext
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
-import org.codehaus.groovy.grails.commons.ApplicationHolder
-
-import com.grailsrocks.emailconfirmation.*
 
 import grails.util.Environment
+import grails.util.Holders
 
 import java.rmi.server.UID
 import java.security.*
@@ -40,7 +34,7 @@ class EmailConfirmationService implements ApplicationContextAware {
 	static EVENT_TYPE_CONFIRMED = 'confirmed'
 	static EVENT_TYPE_INVALID = 'invalid'
 	static EVENT_TYPE_TIMEOUT = 'timeout'
-	
+
 	def mailService
 
 	boolean transactional = true
@@ -52,18 +46,18 @@ class EmailConfirmationService implements ApplicationContextAware {
 	 * This code needs to be threadsafe
 	 */
 	Closure onConfirmation = { email, userToken -> log.error "Your application received an email confirmation event it did not handle!"}
-	
+
 	Closure onInvalid = { invalidToken -> log.error  "Your application received an invalid email confirmation event it did not handle!"}
-	
+
 	Closure onTimeout = { email, userToken -> log.error  "Your application received an email confirmation timeout event it did not handle!"}
-	
+
 	// Auto populated by ApplicationContextAware
 	ApplicationContext applicationContext
-	
+
 	def grailsApplication
-	
+
 	def makeURL(token) {
-	    def grailsApplication = ApplicationHolder.application
+	    def grailsApplication = Holders.grailsApplication
 		def serverURL = grailsApplication.config.grails.serverURL ?: 'http://localhost:8080/'+grailsApplication.metadata.'app.name'
         // @todo we should reverse-map this but currently you'd have to hack the plugin anyway so no point...
     	"${serverURL}/confirm/${token.encodeAsURL()}"
@@ -77,7 +71,7 @@ class EmailConfirmationService implements ApplicationContextAware {
         }
         return eventNamespaceAndPrefix
 	}
-	
+
     void makeToken(confirmation)
     {
         def uid = confirmation.emailAddress + new UID().toString() + prng.nextLong() + System.currentTimeMillis()
@@ -109,11 +103,11 @@ class EmailConfirmationService implements ApplicationContextAware {
                      "[${args.event ? args.event+'.' : ''}] in namespace [${args.eventNamespace ?: EVENT_NAMESPACE}], user data is [${args.id}])"
 		}
 		def conf = new PendingEmailConfirmation(
-		    emailAddress:args.to, 
-		    userToken:args.id, 
+		    emailAddress:args.to,
+		    userToken:args.id,
 		    confirmationEvent:makeConfirmationEventString(args))
         makeToken(conf)
-        
+
         if (log.debugEnabled) {
             log.debug "Created email confirmation token [${conf.confirmationToken}] for mail to ${conf.emailAddress}"
         }
@@ -121,22 +115,22 @@ class EmailConfirmationService implements ApplicationContextAware {
         if (!conf.save()) {
 			throw new IllegalArgumentException( "Unable to save pending confirmation: ${conf.errors}")
 		}
-		
+
 		def binding = args.model ? new HashMap(args.model) : [:]
-	
+
 		binding['uri'] = makeURL(conf.confirmationToken)
 
 		if (log.infoEnabled) {
 			log.info( "Sending email confirmation mail to $args.to - confirmation link is: ${binding.uri}")
 		}
-		
+
 		def defaultView = args.view == null
 		def viewName = defaultView ? "/emailConfirmation/mail/confirmationRequest" : args.view
         def pluginName = defaultView ? "email-confirmation" : args.plugin
 
 		try {
     		mailService.sendMail {
-    			to args.to 
+    			to args.to
     			from args.from ?: pluginConfig.from
     			subject args.subject
     			def bodyArgs = [view:viewName, model:binding]
@@ -155,19 +149,19 @@ class EmailConfirmationService implements ApplicationContextAware {
 		}
 		return conf
     }
-    
+
     /**
      * Legacy confirmation method
      * @deprecated
      */
     @Transactional
-	def sendConfirmation(String emailAddress, String thesubject,  
+	def sendConfirmation(String emailAddress, String thesubject,
 		    Map binding = null, String userToken = null) {
         sendConfirmation(to:emailAddress, subject:thesubject, model:binding, id:userToken)
-	} 
+	}
 
     /**
-     * Find the most recent confirmation URL sent to a given address, useful for tests that 
+     * Find the most recent confirmation URL sent to a given address, useful for tests that
      * don't want to receive emails and parse them in order to provide a confirmation
      * @param email The email address of the user
      * @param args The optional arguments for the confirmation to find, including e.g. id, event and eventNamespace
@@ -177,7 +171,7 @@ class EmailConfirmationService implements ApplicationContextAware {
     def findLastConfirmationUrlFor(String email, Map args) {
         def confirmationEvent = makeConfirmationEventString(args)
 	    def userToken = args.id
-	    
+
 	    def pending = PendingEmailConfirmation.withCriteria({
 	        eq('emailAddress', email)
 	        if (confirmationEvent) {
@@ -189,16 +183,16 @@ class EmailConfirmationService implements ApplicationContextAware {
 	        order('timestamp', 'desc')
 	        maxResults(1)
 	    })
-	    
+
 	    if (pending.size()) {
 	        return makeURL(pending[0].confirmationToken)
 	    } else {
 	        return null
 	    }
     }
-    
+
 	def fireEvent(String callbackType, String appEventPath, Map args, Closure legacyHandler, boolean expectsResult = true) {
-	    
+
         def eventNamespace
         def eventTopic
         if (!appEventPath) {
@@ -219,14 +213,14 @@ class EmailConfirmationService implements ApplicationContextAware {
 	    if (!eventNamespace) {
 	        // Assume its an old event - purely for legacy. 'app' namespace should not be used
 	        result = event(topic:eventTopic, namespace:EVENT_NAMESPACE, data:args, params:[fork:false]).value
-        
+
             if (!result && expectsResult) {
     		    // Legacy only
     		    if (log.warnEnabled) {
     		        log.warn "No event listener for namespace:$EVENT_NAMESPACE and topic:'$eventTopic'. Calling DEPRECATED legacy event handler, change your code to use platform events instead"
     	        }
-    	        result = legacyHandler(args)	
-    	    }   
+    	        result = legacyHandler(args)
+    	    }
 
         } else {
 	        result = event(namespace:eventNamespace, topic:eventTopic, data:args, fork:false).value
@@ -235,13 +229,13 @@ class EmailConfirmationService implements ApplicationContextAware {
                 if (log.warnEnabled) {
                     log.warn "No event handler was found for namespace ${eventNamespace} and topic ${eventTopic} or the result was null, confirmation event was effectively lost"
                 }
-                result = legacyHandler(args)    
-            }   
-        } 
+                result = legacyHandler(args)
+            }
+        }
 
 	    return result
 	}
-	
+
     /**
      * Validate a confirmation token and return a Map indicating "valid" and "actionToTake"
      */
@@ -267,9 +261,9 @@ class EmailConfirmationService implements ApplicationContextAware {
 			}
 			// Tell application it's ok
 			def result = fireEvent(EVENT_TYPE_CONFIRMED, conf.confirmationEvent, [email:conf.emailAddress, id:conf.userToken], {
-                onConfirmation?.clone().call(conf.emailAddress, conf.userToken)					    
+                onConfirmation?.clone().call(conf.emailAddress, conf.userToken)
 			})
-			
+
 			conf.delete()
 			return [valid: true, actionToTake:result, email: conf.emailAddress, token:conf.userToken]
 		} else {
@@ -277,13 +271,13 @@ class EmailConfirmationService implements ApplicationContextAware {
 			    log.trace("checkConfirmation did not find confirmation token: $confirmationToken")
 		    }
 			def result = fireEvent(EVENT_TYPE_INVALID, null, [token:confirmationToken], {
-                onInvalid?.clone().call(confirmationToken)					    
+                onInvalid?.clone().call(confirmationToken)
 			})
-			
+
 			return [valid:false, actionToTake:result]
 		}
 	}
-	
+
     @Transactional
 	void cullStaleConfirmations(long olderThan = 0) {
 		if (log.infoEnabled) {
@@ -301,17 +295,17 @@ class EmailConfirmationService implements ApplicationContextAware {
         // This is unlikely to be too expensive for most people
         staleConfirmationIds.each { id ->
             def confirmation = PendingEmailConfirmation.lock(id)
-            if (confirmation) {   
+            if (confirmation) {
     			// Tell application
     			if (log.debugEnabled) {
     				log.debug( "Notifying application of stale email confirmation for user token ${confirmation.userToken}")
     			}
-    			fireEvent(EVENT_TYPE_TIMEOUT, confirmation.confirmationEvent, 
-                    [email:confirmation.emailAddress, 
+    			fireEvent(EVENT_TYPE_TIMEOUT, confirmation.confirmationEvent,
+                    [email:confirmation.emailAddress,
                      id:confirmation.userToken], {
         			onTimeout.clone().call( confirmation.emailAddress, confirmation.userToken )
     			}, false)
-    			
+
     			confirmation.delete()
     			c++
             }

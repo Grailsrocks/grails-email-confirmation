@@ -15,12 +15,10 @@
  */
 package com.grailsrocks.emailconfirmation
 
-import grails.util.GrailsUtil
-
 class EmailConfirmationTestToolsController {
 
 	def emailConfirmationService
-	
+
 	def confirmationLinksForAddressAndEvent = {
 		// We should not decode params.id this but this is a hack for Grails 1.0.2 bug
 		def result = emailConfirmationService.findConfirmationByEmailAndEvent(params.email, params.event)
