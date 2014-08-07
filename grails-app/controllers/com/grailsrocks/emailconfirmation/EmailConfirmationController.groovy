@@ -15,16 +15,14 @@
  */
 package com.grailsrocks.emailconfirmation
 
-import grails.util.GrailsUtil
-
 class EmailConfirmationController {
 
 	def emailConfirmationService
-	
+
 	// Look up the supplied code and tell view what outcome was
 	def index = {
 		if (log.traceEnabled) log.trace("Email confirmation controller invoked with token ${params.id}")
-		
+
 		// We should not decode params.id this but this is a hack for Grails 1.0.2 bug
 		def result = emailConfirmationService.checkConfirmation(params.id)
 

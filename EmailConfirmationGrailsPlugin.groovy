@@ -15,11 +15,11 @@
  */
 import grails.util.Environment
 
- 
-class EmailConfirmationGrailsPlugin {
-	def version = "2.0.8"
 
-    def grailsVersion = "1.3 > *"
+class EmailConfirmationGrailsPlugin {
+	def version = "3.0.0"
+
+    def grailsVersion = "2.4 > *"
 
     def loadAfter = ['logging']
 
@@ -38,7 +38,7 @@ Send emails to users to perform click-through confirmations of any kind.
 
         // URL to the plugin's documentation
     def documentation = "http://grailsrocks.github.com/grails-email-confirmation"
-	
+
     // Extra (optional) plugin metadata
 
     // License: one of 'APACHE', 'GPL2', 'GPL3'
@@ -55,23 +55,32 @@ Send emails to users to perform click-through confirmations of any kind.
 
     // Online location of the plugin's browseable source code.
     def scm = [ url: "http://github.com/grailsrocks/grails-email-confirmation" ]
-    
-	def doWithSpring = {
-	}   
 
-	def doWithApplicationContext = { applicationContext ->
-	}
+    def doWithWebDescriptor = { xml ->
+    }
 
-	def doWithWebDescriptor = {
-	}	                                      
+    def doWithSpring = {
+    }
+
+    def doWithDynamicMethods = { ctx ->
+    }
+
+    def doWithApplicationContext = { ctx ->
+    }
 
     def doWithConfigOptions = {
         'from'(type:String, defaultValue:'admin@localhost')
     }
-    
-	def onChange = { event ->
-	}                                                                                  
 
-	def onApplicationChange = { event ->
-	}
+    def onChange = { event ->
+    }
+
+    def onApplicationChange = { event ->
+    }
+
+    def onConfigChange = { event ->
+    }
+
+    def onShutdown = { event ->
+    }
 }
